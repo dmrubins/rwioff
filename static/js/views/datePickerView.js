@@ -20,6 +20,7 @@ app.datePickerView = Backbone.View.extend({
 			changeYear: true,
 			yearRange : "2014:2015",
 			minDate : new Date(),
+			maxDate : new Date(2015,6,20),
 			showOtherMonths : true,
 			selectOtherMonths : true
 		});
