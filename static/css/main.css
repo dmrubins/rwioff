@@ -12,6 +12,10 @@ div#residentList{
 	width:125px;
 }
 
+#residentList div{
+	padding:5px;
+}
+
 div#datepicker, .ui-datepicker{
 	text-align:center;
 	margin: 0 auto;
