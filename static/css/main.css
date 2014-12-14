@@ -7,7 +7,7 @@ div#residents, div#datepicker, {
 	width:500px;
 }
 
-div#residents table{
+div#residents div{
 	margin:10px auto;
 	width:300px;
 }
