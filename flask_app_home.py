@@ -5,10 +5,11 @@ from flask import Flask
 from _datetime import datetime
 import pickle
 import json
-from Shift import DATESTR
+from python.Shift import DATESTR
+import os
 
 global DayOff
-with open("/home/dmrubins/site/python/DayOffList.pickle", 'rb') as f:
+with open("python\\DayOffList.pickle", 'rb') as f:
     DayOff = pickle.load(f)
 app = Flask(__name__)
 
@@ -24,3 +25,5 @@ def get_residents_for_date(date):
     j = { "names" : [x[0] for x in t],
          "blocks" : [x[1] for x in t]}
     return json.dumps(j)
+
+app.run()

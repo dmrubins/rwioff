@@ -6,7 +6,7 @@
 <link rel="stylesheet" href="css/main.css" />
 
 <script type="template" id="residentBlockTemplate">
-	<tr><td><%= name %></td><td><%= block %></td></tr>
+	<div title="Off of <%=block%>"><%= name %></div>
 </script>
 
 <script type="template" id="date">
@@ -49,13 +49,9 @@ $(function(){
 
 
 <div id="residents">
-<div id="datepicker">
-
-</div>
-<hr />
-<table id="residentList">
-
-</table>
+	<div id="datepicker"></div>
+	<hr />
+	<div id="residentList"></div>
 </div>
 
 </body>
