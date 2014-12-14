@@ -13,10 +13,6 @@ with open("python\\DayOffList.pickle", 'rb') as f:
     DayOff = pickle.load(f)
 app = Flask(__name__)
 
-@app.route('/')
-def hello_world():
-    return app.send_static_file('index.html')
-
 @app.route("/residents/<date>")
 def get_residents_for_date(date):
     global DayOff

@@ -22,6 +22,7 @@
 <script type="text/javascript" src="js/models/scheduleModel.js"></script>
 <script type="text/javascript" src="js/views/residentBlockView.js"></script>
 <script type="text/javascript" src="js/views/datePickerView.js"></script>
+<script type="text/javascript" src="js/views/emailView.js"></script>
 
 
 <script type="text/javascript">
@@ -40,6 +41,9 @@ $(function(){
 
 	v = new app.residentBlockView({model : schedule, el : $('#residentList') })
 	schedule.getResidentsOffForDate(new Date())
+
+	email = new app.emailView({el : $("#email"), model : schedule})
+
 })
 </script>
 
@@ -50,6 +54,10 @@ $(function(){
 
 <div id="residents">
 	<div id="datepicker"></div>
+	<hr />
+	<a id="email" class="button">
+		Email All
+	</a>
 	<hr />
 	<div id="residentList"></div>
 </div>
