@@ -44,7 +44,6 @@ class Block():
     def get_summary(self):
         return self.summary
 
-
 class Shifts():
     
     def __init__(self):
@@ -64,7 +63,7 @@ class Schedule():
         self.blocks = {}
         self.shifts = Shifts()
     
-    def _addToSchedule(self, start_date, end_date, summary):
+    def _addIcaEventToSchedule(self, start_date, end_date, summary):
         #print("Start: {}, End: {}, Summary: {}".format(start_date, end_date, summary))
         isBlock = start_date == end_date
     

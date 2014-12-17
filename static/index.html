@@ -1,16 +1,19 @@
 <html>
 
 <head>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
 <link rel="stylesheet" href="css/jquery-ui.min.css" />
 <link rel="stylesheet" href="css/main.css" />
 
 <script type="template" id="residentBlockTemplate">
-	<div title="Off of <%=block%>"><%= name %></div>
+	<li title="Off of <%=block%>" class="list-group-item"><%= name %></li>
 </script>
 
 <script type="template" id="date">
-	<h2>Interns not working on <span id="date"><%= date %></span></h2>
+	<h2><span class="label" id="date"><%= date %></span></h2>
 </script>
 
 <script type="text/javascript" src="js/libs/jquery.js"></script>
@@ -39,7 +42,7 @@ $(function(){
 	d = new app.datePickerView({model: schedule, el: $('#datepicker')});
 	d.render();
 
-	v = new app.residentBlockView({model : schedule, el : $('#residentList') })
+	v = new app.residentBlockView({model : schedule, el : $('#DayOffResidentList') })
 	schedule.getResidentsOffForDate(new Date())
 
 	email = new app.emailView({el : $("#email"), model : schedule})
@@ -51,17 +54,37 @@ $(function(){
 
 <body>
 
+<div class="container">
+	<div class="row">
+		<div class="col-sm-12">
+			<div id="datepicker"></div>
+		</div>
+	</div>
+	<hr />
+	
+	<div class="row">
+		<div class="col-sm-12">
+			<a id="email" class="button label">Email All</a>
+			<div style="text-align:center;font-size:14px">Only works with Partners email 	address in Outlook. (for now)</div>
+		</div>
+	</div>
 
-<div id="residents">
-	<div id="datepicker"></div>
 	<hr />
-	<a id="email" class="button">
-		Email All
-	</a>
-	<div style="text-align:center;font-size:14px">Only works with Partners email address in Outlook. (for now)</div>
-	<hr />
-	<div id="residentList"></div>
+	<div class="row">
+		<div class="col-sm-12">
+			<div class="panel panel-success">
+				<div class="panel-heading">
+					<h3 class="panel-title">Day Off</h3>
+				</div>
+				<div class="panel-body">
+					<ul class="list-group" id="DayOffResidentList"></ul>
+				</div>
+			</div>
+		</div>
+	</div>
+	
 </div>
+
 
 </body>
 </html>

@@ -5,7 +5,7 @@ from flask import Flask
 from _datetime import datetime
 import pickle
 import json
-from Shift import DATESTR
+from Schedule import DATESTR
 
 global DayOff
 with open("/home/dmrubins/site/python/DayOffList.pickle", 'rb') as f:

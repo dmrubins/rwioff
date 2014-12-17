@@ -5,7 +5,7 @@ from flask import Flask
 from _datetime import datetime
 import pickle
 import json
-from python.Shift import DATESTR
+from python.Schedule import DATESTR
 import os
 
 global DayOff
