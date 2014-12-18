@@ -23,14 +23,15 @@ app.scheduleModel = Backbone.Model.extend({
 		var residents = new app.residentsOffCollection();
 		var sm = this;
 
-		$.ajax('/residents/' + date)
+		$.ajax('/on/' + date)
 			.done(function(data){
 				//console.log(data);
 				data = $.parseJSON(data);
 				names = data.names;
 				blocks = data.blocks;
+				ids = data.ids;
 				for (var i = 0; i < names.length; i++){
-					residents.add(new app.residentOffForDayModel({'name': names[i], 'block': blocks[i]}) ) ;
+					residents.add(new app.residentOffForDayModel({'name': names[i], 'block': blocks[i], 'id' : ids[i]}) ) ;
 				}
 				sm.set('residents' , residents);
 				console.log(residents.size())

@@ -16,7 +16,7 @@ app = Flask(__name__)
 def hello_world():
     return app.send_static_file('index.html')
 
-@app.route("/residents/<date>")
+@app.route("/on/<date>")
 def get_residents_for_date(date):
     global DayOff
     dt = datetime.strptime(date, '%Y%m%d')
@@ -24,3 +24,4 @@ def get_residents_for_date(date):
     j = { "names" : [x[0] for x in t],
          "blocks" : [x[1] for x in t]}
     return json.dumps(j)
+

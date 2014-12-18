@@ -16,7 +16,6 @@ class Shift():
         self.summary = summary
         self.start_dt = start_dt
         self.end_dt = end_dt
-    
 
     def set_summary(self, summary):
         self.summary = summary
@@ -38,9 +37,15 @@ class Shift():
     def get_summary(self):
         return self.summary
 
+    def is_day_off(self):
+        return False
+
 class DayOff(shift)
     def __init__(self):
         self.set_summary("Day Off")
+
+    def is_day_off(self):
+        return True
 
 class Block():
     
@@ -83,10 +88,11 @@ class Blocks():
 
 class Schedule():
     
-    def __init__(self, date_range):
+    def __init__(self, name, date_range):
         self.blocks = Blocks()
         self.shifts = Shifts()
         self.date_range = date_range
+        self.name = name
     
     def _add_ica_event_to_schedule(self, start_date, end_date, summary):
         #print("Start: {}, End: {}, Summary: {}".format(start_date, end_date, summary))
@@ -177,7 +183,13 @@ class Schedule():
     def get_shift_for_date(self, dt):
         return self.shifts.get(dt)
     
+    def get_resident(self):
+        return self.name
+
     def is_off_on(self, dt):
+        shift = self.shifts.get(dt)
+        return shift.is_day_off():
+
         shift = self.shifts.get(dt) # get the shift for the date
         if shift is not None:
             #print('On {}, you are on {}'.format(date, shift.get_summary()))
@@ -256,6 +268,20 @@ class Schedule():
             return "Unknown"
         return block.get_summary()
 
+class Schedules():
+
+    def __init__(self):
+        self.schedules = []
+
+    def add(self, schedule):
+        self.schedules.append(schedule)
+
+    def get_residents_off_for_date(self, dt):
+        off_residents = []
+        for s in schedules:
+            if s.is_off_on(dt):
+                off_residents.append( s.get_resident() )
+
 class InternSchedule(Schedule):
 
     def _get_block_name_from_shift(self, shift):
@@ -323,6 +349,79 @@ class InternSchedule(Schedule):
 
 
 
+class JuniorSchedule(Schedule):
+
+    def _get_block_name_from_shift(self, shift):
+        
+        # Format of XXXX long/short intern #
+        # ITU, MICU, GMS, VA-Cards, CHF, Onc-A, Onc-C, CCU, MICU, Cards, FGMS
+        #print( shift.get_summary() )
+        m = re.search('(?:Call )?(.*?) (?:long|short|post-night) ', shift.get_summary(), re.I)
+        if m is not None:
+            return m.group(1)
+
+        # Format of XXX intern XXX
+        # Onc nightfloat
+        m = re.search('(.*?)intern (.*?) ', shift.get_summary(), re.I)
+        if m is not None:
+            block = m.group(1) + m.group(2)
+            return block
+
+        # XXXX twilight intern 
+        # GMS
+        m = re.search('(.*?) twilight', shift.get_summary(), re.I )        
+        if m is not None:
+            return m.group(1) + 'Twilight'
+
+        # Cards nightfloat resident
+        m = re.search('(.*?) nightfloat', shift.get_summary(), re.I)
+        if m is not None:
+            return m.group(1) + "Nightfloat"
+
+        m = re.search('(.*?) flex', shift.get_summary(), re.I)
+        if m is not None:
+            return m.group(1) + "Nightfloat"
+
+    def _get_shift_from_block(self, block, prev_shift):
+        
+        dt = block.dt
+        isWeekend = dt.weekday() == 5 or dt.weekday() == 6            
+        standard_shift = Shift(dt.replace(hour=7), dt.replace(hour=5), block.get_summary())
+
+        # For Amby, elective, peds, anesthesia, assume that all weekday shifts are 8-5
+        if block.is_("Amb") or self.is_block_(block, "pcar") or self.is_block_(block, "hvm") or block.is_("elec") or block.is_("PEDS") or block.is_("Blood") or block.is_("Anesth"):
+            if isWeekend:
+                return DayOff()
+            else:
+                shift = Shift()
+                shift.set_summary("Amby")
+                shift.set_start(dt.replace(hour=8))
+                shift.set_end(dt.replace(hour=17))
+                return shift
+
+        # CCU, ITU
+        if block.is_("ITU") or block.is_("CCU"):
+            return DayOff()
+
+        # For GMS, BMT and CHF, if you don't have a shift on the weekend, you're off
+        # If you don't have a shift on a weekday, you're the short intern
+        if block.is_("GMS") or block.is_("BMT") or block.is_("CHF"):
+            if isWeekend:
+                return DayOff()
+            else:
+                return standard_shift
+
+
+        # B team, VA-GMS, FGMS, VA-Cards
+        # If you don't have a shift on a weekend, and the previous day you were long, then you are on
+        # If you don't have a shift on a weekday, then you are pre/post call
+        if block.is_("cards") or block.is_("VA-GMS") or block.is_("FGMS") or block.is_("VA-Cards"):
+            if isWeekend:
+                if prev_shift is None or not re.search("long", prev_shift, re.I):
+                    return DayOff()
+            return standard_shift
+
+        print("Get shift failed; Block: {}".format(block.get_summary()) )
 
 
 

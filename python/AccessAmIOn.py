@@ -44,51 +44,55 @@ for select in selects:
     options = select.find('option') #find the first option
     if (options.contents[0] == "Interns\n"): #check if that option is intern
         interns = str(options.contents[1])  #stringify the options (the formatting of the website is wrong, so every option is a child of the previous option)
-
-
-#create the list of interns that will store the vcal identifier
-internstack = []
+    if (options.contents[0] == "Juniors\n"):
+        juniors = str(options.contents[1])
+    if (options.contents[0] == "Seniors\n"):
+        seniors = str(options.contents[1])
 
 # Enumerate all the potential dates
 start_date = datetime.now().date()
 end_date = date(2015, 6, 20) #last day of this year
 dates = [start_date + timedelta(i) for i in range(int ( (end_date - start_date).days ))]
-DayOff = {}
 
-#pattern to get the vcal identifier 
-pattern = "<option value=\".*?14\*(.*)\*.*?>(.*)"
-#pattern = 'skip'
-
-#interns = '<option value="ttttt14*tttt*tttt>tttt'
-#cycle through all the matches and grab the vcal identifier and the interns name
-for m in re.finditer(pattern, interns, re.IGNORECASE):
-    vcal = m.group(1)
-    #vcal = '9029'
-    intern_name = m.group(2)
-    if re.search("ED Intern", intern_name, re.I) or re.search("SubI Set",  intern_name, re.I) or re.search("OB Intern", intern_name, re.I):
-        continue
-    
-    m = re.match("(.*?), (\w*)\(?", intern_name, re.I)
-    if m:
-        intern_name = m.group(2) + " " + m.group(1)
-    
-    internstack.append(intern_name)
-    
+def get_ica_file(vcal):
     #Download the ICA file
     req = urllib.request.Request(BASE_URL + "?Vcal=7." + vcal + "&Lo=bwh07&Jd=6558")
     f = urllib.request.urlopen(req)
 
     #Read the calendar into a cal variable
-    cal = Calendar.from_ical(f.read())
-    schedule = InternSchedule(dates)
+    return Calendar.from_ical(f.read())
+
+#pattern to get the vcal identifier 
+pattern = "<option value=\".*?14\*(.*)\*.*?>(.*)"
+
+#cycle through all the matches and grab the vcal identifier and the residents name
+for m in re.finditer(pattern, interns, re.IGNORECASE):
+    vcal = m.group(1)
+    cal = get_ica_file(vcal)
+
+    schedule = InternSchedule(m.group(2), dates)
     schedule.create_from_ical(cal)
- 
-    print(intern_name)
- 
+
+for m in re.finditer(pattern, juniors, re.I):
+    vcal = m.group(1)
+    cal = get_ica_file(vcal)
+
+    schedule = JuniorSchedule(m.group(2), dates)
+    schedule.create_from_ical(cal)
+
+for m in re.finditer(pattern, seniors, re.I):
+    vcal = m.group(1)
+    cal = get_ica_file(vcal)
+
+    schedule = SeniorSchedule(m.group(2), dates)
+    schedule.create_from_ical(cal)
+
+
+
+"""
     for d in dates:
         day = datetime.strftime(d,DATESTR)
         isOff = schedule.is_off_on(d)
-        #print('Day: {}, Off: {}'.format(d, isOff))
         if isOff:
             temp = ((intern_name,schedule.get_block(d)),)
             if DayOff.get(day) is not None:    
@@ -96,7 +100,8 @@ for m in re.finditer(pattern, interns, re.IGNORECASE):
             else:
                 DayOff[day] = temp
     
-    
+"""
+
 #Open the txt file with the holiday days off
 with open('holiday.txt', 'r') as f:
     for line in f:
