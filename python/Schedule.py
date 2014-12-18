@@ -61,7 +61,7 @@ class Blocks():
     def __init__(self):
         self.blocks = {}
 
-    def add(self, shift):
+    def add(self, block):
         day = block.get_day()
         self.blocks[day] = block
 
@@ -71,7 +71,7 @@ class Blocks():
 class Schedule():
     
     def __init__(self, date_range):
-        self.blocks = {}
+        self.blocks = Blocks()
         self.shifts = Shifts()
         self.date_range = date_range
     
@@ -125,7 +125,7 @@ class Schedule():
     
     def add_block(self, block):
         #print('Date: {}, Block: {}'.format(block.get_day(), block.get_summary()))
-        self.blocks[block.get_day()] = block
+        self.blocks.add(block)
         
     def add_shift(self, shift):
         self.shifts.add(shift)
@@ -214,13 +214,21 @@ class Schedule():
 
 class InternSchedule(Schedule):
 
-    def _get_block_from_shift(self, shift):
+    def _get_block_name_from_shift(self, shift):
         
         # Format of XXXX long/short intern #
         # ITU, MICU, GMS, VA-Cards, CHF, Onc-A, Onc-C, CCU, MICU, Cards, FGMS
+        #print( shift.get_summary() )
         m = re.search('(?:Call )?(.*?) (?:long|short|post-night) ', shift.get_summary(), re.I)
-        print( m.group(1) )
+        if m is not None:
+            return m.group(1)
 
+
+        m = re.search('(.*?)intern (.*?) ', shift.get_summary(), re.I)
+        if m is not None:
+            block = m.group(1) + m.group(2)
+            return block
+            print( "block: {}".format(block) )
         # Format of XXX intern XXX
         # Onc nightfloat
 
@@ -249,11 +257,11 @@ class InternSchedule(Schedule):
                 if next_shift is None:
                     #TODO
                     continue
-                block = self._get_block_from_shift(next_shift)
+                block_name = self._get_block_name_from_shift(next_shift)
 
             # If the block doesn't exist, look at the shift
-            if block is None:
-                block = self._get_block_from_shift(shift)
+            elif block is None:
+                block_name = self._get_block_name_from_shift(shift)
 
             # If the shift doesn't exist, look at the block
             if shift is None:
@@ -261,8 +269,9 @@ class InternSchedule(Schedule):
                 shift = self._get_shift_from_block(block, next_shift)
 
             # Add the block/shift back to the maps
-            self.blocks.add(block)
-            self.shifts.add(shift)
+            if shift is not None and block is not None:
+                self.blocks.add( Block(dt, block_name) )
+                self.shifts.add(shift)
 
 
 

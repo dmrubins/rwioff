@@ -9,7 +9,7 @@ import urllib.request
 from bs4 import BeautifulSoup
 from icalendar import Calendar
 from datetime import date, timedelta, datetime
-from Schedule import Schedule, DATESTR
+from Schedule import InternSchedule, DATESTR
 import pickle
 
 ########################################
