@@ -36,16 +36,16 @@ pad = function (val, len) {
         return val;
 	};
 
-schedule = new app.scheduleModel({});
+internSchedule = new app.scheduleModel({});
 
 $(function(){
-	d = new app.datePickerView({model: schedule, el: $('#datepicker')});
+	d = new app.datePickerView({model: internSchedule, el: $('#datepicker')});
 	d.render();
 
-	v = new app.residentBlockView({model : schedule, el : $('#DayOffResidentList') })
-	schedule.getResidentsOffForDate(new Date())
+	v = new app.residentBlockView({model : internSchedule, el : $('#InternOffList') })
+	internSchedule.getResidentsOffForDate(new Date())
 
-	email = new app.emailView({el : $("#email"), model : schedule})
+	email = new app.emailView({el : $("#internemail"), model : internSchedule})
 
 })
 </script>
@@ -64,16 +64,54 @@ $(function(){
 
 	<hr />
 	<div class="row">
-		<div class="col-sm-12">
+		<div class="col-sm-4">
 			<div class="panel panel-success">
 				<div class="panel-heading">
-					<h3 class="panel-title">Day Off</h3>
+					<h3 class="panel-title">Interns Off</h3>
 				</div>
 				<div class="panel-body">
-					<ul class="list-group" id="DayOffResidentList"></ul>
+					<ul class="list-group" id="InternOffList"></ul>
 					<div class="row">
 						<div class="col-sm-12">
-							<a id="email" class="button label">Email All</a>
+							<a id="internemail" class="email-button label">Email All</a>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-12" style="text-align:center">Only works with Partners email address in Outlook. (for now)</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-sm-4">
+			<div class="panel panel-info">
+				<div class="panel-heading">
+					<h3 class="panel-title">Juniors Off</h3>
+				</div>
+				<div class="panel-body">
+					<ul class="list-group" id="JuniorOffList"></ul>
+					<div class="row">
+						<div class="col-sm-12">
+							<a id="junioremail" class="email-button label">Email All</a>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-sm-12" style="text-align:center">Only works with Partners email address in Outlook. (for now)</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-sm-4">
+			<div class="panel panel-danger">
+				<div class="panel-heading">
+					<h3 class="panel-title">Seniors Off</h3>
+				</div>
+				<div class="panel-body">
+					<ul class="list-group" id="SeniorOffList"></ul>
+					<div class="row">
+						<div class="col-sm-12">
+							<a id="senioremail" class="email-button label">Email All</a>
 						</div>
 					</div>
 					<div class="row">
