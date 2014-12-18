@@ -80,7 +80,7 @@ for m in re.finditer(pattern, interns, re.IGNORECASE):
 
     #Read the calendar into a cal variable
     cal = Calendar.from_ical(f.read())
-    schedule = Schedule()
+    schedule = InternSchedule(dates)
     schedule.create_from_ical(cal)
  
     print(intern_name)

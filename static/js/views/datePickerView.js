@@ -7,7 +7,7 @@ app.datePickerView = Backbone.View.extend({
 	heading : $('<div></div>'),
 
 	events : {
-		'click #date' : "showDatePicker"
+//		'click #date' : "showDatePicker"
 	},
 
 	initialize : function(){
@@ -38,12 +38,12 @@ app.datePickerView = Backbone.View.extend({
 	render : function(){
 		this.updateHeading();
 		this.$el.append(this.heading);
+		this.$el.append(this.dp)
 		return this;
 	},
 
 	showDatePicker : function(){
 		this.$el.append(this.dp)
-		//this.dp.toggle('slide')
 	}
 
 })

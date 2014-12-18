@@ -57,13 +57,25 @@ class Shifts():
     def get(self, dt):
         return self.shifts.get(datetime.strftime(dt, DATESTR))
 
-class Schedule():
-    
+class Blocks():
     def __init__(self):
         self.blocks = {}
-        self.shifts = Shifts()
+
+    def add(self, shift):
+        day = block.get_day()
+        self.blocks[day] = block
+
+    def get(self, dt):
+        return self.blocks.get( datetime.strftime(dt,DATESTR) )
+
+class Schedule():
     
-    def _addIcaEventToSchedule(self, start_date, end_date, summary):
+    def __init__(self, date_range):
+        self.blocks = {}
+        self.shifts = Shifts()
+        self.date_range = date_range
+    
+    def _add_ica_event_to_schedule(self, start_date, end_date, summary):
         #print("Start: {}, End: {}, Summary: {}".format(start_date, end_date, summary))
         isBlock = start_date == end_date
     
@@ -76,6 +88,9 @@ class Schedule():
         else:
             self.add_block( Block(start_date, str(summary)) )
     
+    def _fix_up_calendar(self):
+        return
+
     def create_from_ical(self, cal):
         for component in cal.walk('vevent'):
     
@@ -101,10 +116,12 @@ class Schedule():
                 ends = list(rrule(DAILY, count=COUNT, interval=INTERVAL, dtstart=end_date))
         
                 for i in range(len(starts)):
-                    self._addToSchedule(starts[i], ends[i], summary)
+                    self._add_ica_event_to_schedule(starts[i], ends[i], summary)
                     
             else:
-                self._addToSchedule(start_date, end_date, summary)
+                self._add_ica_event_to_schedule(start_date, end_date, summary)
+
+        self._fix_up_calendar();
     
     def add_block(self, block):
         #print('Date: {}, Block: {}'.format(block.get_day(), block.get_summary()))
@@ -194,3 +211,67 @@ class Schedule():
         if block is None:
             return "Unknown"
         return block.get_summary()
+
+class InternSchedule(Schedule):
+
+    def _get_block_from_shift(self, shift):
+        
+        # Format of XXXX long/short intern #
+        # ITU, MICU, GMS, VA-Cards, CHF, Onc-A, Onc-C, CCU, MICU, Cards, FGMS
+        m = re.search('(?:Call )?(.*?) (?:long|short|post-night) ', shift.get_summary(), re.I)
+        print( m.group(1) )
+
+        # Format of XXX intern XXX
+        # Onc nightfloat
+
+        # XXXX twilight intern 
+        # GMS
+        
+
+
+
+        return
+
+    def _get_shift_from_block(self, block, next_shift):
+        #todo
+        return
+
+    def _fix_up_calendar(self):
+        for dt in self.date_range:
+
+            # Get the block/shift for the day
+            block = self.blocks.get(dt)
+            shift = self.shifts.get(dt)
+            
+            # If both the block and shift don't exist, look at the previous/next day
+            if block is None and shift is None:
+                next_shift = self.shifts.get( dt + timedelta(1) )
+                if next_shift is None:
+                    #TODO
+                    continue
+                block = self._get_block_from_shift(next_shift)
+
+            # If the block doesn't exist, look at the shift
+            if block is None:
+                block = self._get_block_from_shift(shift)
+
+            # If the shift doesn't exist, look at the block
+            if shift is None:
+                next_shift = self.shifts.get( dt + timedelta(1) )
+                shift = self._get_shift_from_block(block, next_shift)
+
+            # Add the block/shift back to the maps
+            self.blocks.add(block)
+            self.shifts.add(shift)
+
+
+
+
+
+
+
+
+
+
+
+
