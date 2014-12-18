@@ -12,6 +12,12 @@ DATESTR = '%Y-%m-%d'
 
 class Shift():
     
+    def __init__(self, start_dt=datetime.datetime(), end_dt = datetime.datetime(), summary = None):
+        self.summary = summary
+        self.start_dt = start_dt
+        self.end_dt = end_dt
+    
+
     def set_summary(self, summary):
         self.summary = summary
 
@@ -32,6 +38,10 @@ class Shift():
     def get_summary(self):
         return self.summary
 
+class DayOff(shift)
+    def __init__(self):
+        self.set_summary("Day Off")
+
 class Block():
     
     def __init__(self, dt, summary):
@@ -40,9 +50,12 @@ class Block():
 
     def get_day(self):
         return datetime.strftime(self.dt, DATESTR)
-    
+
     def get_summary(self):
         return self.summary
+
+    def is_(self, block_name):
+        return re.search(block_name, self.get_summary(), re.IGNORECASE)
 
 class Shifts():
     
@@ -89,7 +102,38 @@ class Schedule():
             self.add_block( Block(start_date, str(summary)) )
     
     def _fix_up_calendar(self):
-        return
+        for dt in self.date_range:
+
+            # Get the block/shift for the day
+            block = self.blocks.get(dt)
+            shift = self.shifts.get(dt)
+            
+            if block is None:
+                # If both the block and shift don't exist, look at the previous/next day
+                if shift is None:
+                    next_shift = self.shifts.get( dt + timedelta(1) )
+                    if next_shift is None:
+                        #TODO
+                        continue
+                    block_name = self._get_block_name_from_shift(next_shift)
+
+                # If the block doesn't exist, look at the shift
+                else:
+                    block_name = self._get_block_name_from_shift(shift)
+
+                #Create the new block using derived data
+                block = Block(dt, block_name)
+
+            # If the shift doesn't exist, look at the block
+            if shift is None:
+                prev_shift = self.shifts.get( dt - timedelta(1) )
+                shift = self._get_shift_from_block(block, prev_shift)
+
+            # Add the block/shift back to the maps
+            if shift is not None and block is not None:
+                self.blocks.add( block )
+                self.shifts.add( shift )
+
 
     def create_from_ical(self, cal):
         for component in cal.walk('vevent'):
@@ -223,55 +267,59 @@ class InternSchedule(Schedule):
         if m is not None:
             return m.group(1)
 
-
+        # Format of XXX intern XXX
+        # Onc nightfloat
         m = re.search('(.*?)intern (.*?) ', shift.get_summary(), re.I)
         if m is not None:
             block = m.group(1) + m.group(2)
             return block
-            print( "block: {}".format(block) )
-        # Format of XXX intern XXX
-        # Onc nightfloat
 
         # XXXX twilight intern 
         # GMS
+        m = re.search('(.*?) twilight', shift.get_summary(), re.I )        
+        if m is not None:
+            return m.group(1) + 'Twilight'
+
+    def _get_shift_from_block(self, block, prev_shift):
         
+        dt = block.dt
+        isWeekend = dt.weekday() == 5 or dt.weekday() == 6            
+        standard_shift = Shift(dt.replace(hour=7), dt.replace(hour=5), block.get_summary())
+
+        # For Amby, elective, peds, anesthesia, assume that all weekday shifts are 8-5
+        if block.is_("Amb") or self.is_block_(block, "pcar") or self.is_block_(block, "hvm") or block.is_("elec") or block.is_("PEDS") or block.is_("Blood") or block.is_("Anesth"):
+            if isWeekend:
+                return DayOff()
+            else:
+                shift = Shift()
+                shift.set_summary("Amby")
+                shift.set_start(dt.replace(hour=8))
+                shift.set_end(dt.replace(hour=17))
+                return shift
+
+        # CCU, ITU
+        if block.is_("ITU") or block.is_("CCU"):
+            return DayOff()
+
+        # For GMS, BMT and CHF, if you don't have a shift on the weekend, you're off
+        # If you don't have a shift on a weekday, you're the short intern
+        if block.is_("GMS") or block.is_("BMT") or block.is_("CHF"):
+            if isWeekend:
+                return DayOff()
+            else:
+                return standard_shift
 
 
+        # B team, VA-GMS, FGMS, VA-Cards
+        # If you don't have a shift on a weekend, and the previous day you were long, then you are on
+        # If you don't have a shift on a weekday, then you are pre/post call
+        if block.is_("cards") or block.is_("VA-GMS") or block.is_("FGMS") or block.is_("VA-Cards"):
+            if isWeekend:
+                if prev_shift is None or not re.search("long", prev_shift, re.I):
+                    return DayOff()
+            return standard_shift
 
-        return
-
-    def _get_shift_from_block(self, block, next_shift):
-        #todo
-        return
-
-    def _fix_up_calendar(self):
-        for dt in self.date_range:
-
-            # Get the block/shift for the day
-            block = self.blocks.get(dt)
-            shift = self.shifts.get(dt)
-            
-            # If both the block and shift don't exist, look at the previous/next day
-            if block is None and shift is None:
-                next_shift = self.shifts.get( dt + timedelta(1) )
-                if next_shift is None:
-                    #TODO
-                    continue
-                block_name = self._get_block_name_from_shift(next_shift)
-
-            # If the block doesn't exist, look at the shift
-            elif block is None:
-                block_name = self._get_block_name_from_shift(shift)
-
-            # If the shift doesn't exist, look at the block
-            if shift is None:
-                next_shift = self.shifts.get( dt + timedelta(1) )
-                shift = self._get_shift_from_block(block, next_shift)
-
-            # Add the block/shift back to the maps
-            if shift is not None and block is not None:
-                self.blocks.add( Block(dt, block_name) )
-                self.shifts.add(shift)
+        print("Get shift failed; Block: {}".format(block.get_summary()) )
 
 
 
