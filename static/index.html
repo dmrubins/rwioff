@@ -36,14 +36,20 @@ pad = function (val, len) {
         return val;
 	};
 
-internSchedule = new app.scheduleModel({});
+internSchedule = new app.scheduleModel({pgy: "interns"});
+juniorSchedule = new app.scheduleModel({pgy: "juniors"});
+seniorSchedule = new app.scheduleModel({pgy: "seniors"});
 
 $(function(){
 	d = new app.datePickerView({model: internSchedule, el: $('#datepicker')});
 	d.render();
 
-	v = new app.residentBlockView({model : internSchedule, el : $('#InternOffList') })
+	new app.residentBlockView({model : internSchedule, el : $('#InternOffList') })
+	new app.residentBlockView({model : juniorSchedule, el : $('#JuniorOffList') })
+	new app.residentBlockView({model : seniorSchedule, el : $('#SeniorOffList') })
 	internSchedule.getResidentsOffForDate(new Date())
+	juniorSchedule.getResidentsOffForDate(new Date())
+	seniorSchedule.getResidentsOffForDate(new Date())
 
 	email = new app.emailView({el : $("#internemail"), model : internSchedule})
 
@@ -64,7 +70,7 @@ $(function(){
 
 	<hr />
 	<div class="row">
-		<div class="col-sm-4">
+		<div class="col-sm-6">
 			<div class="panel panel-success">
 				<div class="panel-heading">
 					<h3 class="panel-title">Interns Off</h3>
@@ -83,7 +89,7 @@ $(function(){
 			</div>
 		</div>
 
-		<div class="col-sm-4">
+		<div class="col-sm-6">
 			<div class="panel panel-info">
 				<div class="panel-heading">
 					<h3 class="panel-title">Juniors Off</h3>
@@ -102,7 +108,7 @@ $(function(){
 			</div>
 		</div>
 
-		<div class="col-sm-4">
+		<div class="col-sm-6">
 			<div class="panel panel-danger">
 				<div class="panel-heading">
 					<h3 class="panel-title">Seniors Off</h3>
