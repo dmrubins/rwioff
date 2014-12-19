@@ -3,9 +3,8 @@ Created on Dec 7, 2014
 
 @author: David
 '''
-from datetime import datetime
 import re
-from _datetime import timedelta, time, date
+from datetime import timedelta, time, date, datetime
 from dateutil.rrule import *
 
 DATESTR = '%Y-%m-%d'

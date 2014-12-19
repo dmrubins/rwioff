@@ -106,12 +106,12 @@ for m in re.finditer(pattern, seniors, re.I):
 
 #Save the file with filename lastname_firstname
 with open('InternSchedules.pickle', 'wb') as f:
-    pickle.dump(intern_schedules, f)
+    pickle.dump(intern_schedules, f, protocol=2)
 
-with open('JuniorSchedules.pickle', 'wb') as f:
+with open('JuniorSchedules.pickle', 'wb', protocol=2) as f:
     pickle.dump(junior_schedules, f)
 
-with open('SeniorSchedules.pickle', 'wb') as f:
+with open('SeniorSchedules.pickle', 'wb', protocol=2) as f:
     pickle.dump(senior_schedules, f)
 
 
