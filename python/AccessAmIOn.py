@@ -9,11 +9,12 @@ import urllib.request
 from bs4 import BeautifulSoup
 from icalendar import Calendar
 from datetime import date, timedelta, datetime
-from Schedule import InternSchedule, DATESTR
+from Schedule import InternSchedule, DATESTR, Schedules
+from JuniorSchedule import JuniorSchedule
+from SeniorSchedule import SeniorSchedule
 import pickle
 
 ########################################
-datestr = '%Y-%m-%d'
 BASE_URL = 'http://www.amion.com/cgi-bin/ocs'
 PASSWORD = b"bwh07"
 ########################################
@@ -65,7 +66,12 @@ def get_ica_file(vcal):
 #pattern to get the vcal identifier 
 pattern = "<option value=\".*?14\*(.*)\*.*?>(.*)"
 
+intern_schedules = Schedules()
+junior_schedules = Schedules()
+senior_schedules = Schedules()
+
 #cycle through all the matches and grab the vcal identifier and the residents name
+
 for m in re.finditer(pattern, interns, re.IGNORECASE):
 #for i in range(1):
     vcal = m.group(1)
@@ -78,22 +84,37 @@ for m in re.finditer(pattern, interns, re.IGNORECASE):
 
     schedule = InternSchedule(intern_name, dates)
     schedule.create_from_ical(cal)
+    intern_schedules.add(schedule)
 
 for m in re.finditer(pattern, juniors, re.I):
     vcal = m.group(1)
-#    cal = get_ica_file(vcal)
-
-   # schedule = JuniorSchedule(m.group(2), dates)
-   # schedule.create_from_ical(cal)
+    res_name = m.group(2)
+    cal = get_ica_file(vcal)
+    print("Junior: {}".format(res_name))
+    schedule = JuniorSchedule(res_name, dates)
+    schedule.create_from_ical(cal)
+    junior_schedules.add(schedule)
 
 for m in re.finditer(pattern, seniors, re.I):
     vcal = m.group(1)
-#    cal = get_ica_file(vcal)
+    res_name = m.group(2)
+    cal = get_ica_file(vcal)
+    print("Senior: {}".format(res_name))
+    schedule = SeniorSchedule(m.group(2), dates)
+    schedule.create_from_ical(cal)
+    senior_schedules.add(schedule)
 
-   # schedule = SeniorSchedule(m.group(2), dates)
-   # schedule.create_from_ical(cal)
+#Save the file with filename lastname_firstname
+with open('InternSchedules.pickle', 'wb') as f:
+    pickle.dump(intern_schedules, f)
 
-    #print(juniors)
+with open('JuniorSchedules.pickle', 'wb') as f:
+    pickle.dump(junior_schedules, f)
+
+with open('SeniorSchedules.pickle', 'wb') as f:
+    pickle.dump(senior_schedules, f)
+
+
 
 """
     for d in dates:
@@ -106,7 +127,9 @@ for m in re.finditer(pattern, seniors, re.I):
             else:
                 DayOff[day] = temp
     
-"""
+
+
+
 
 #Open the txt file with the holiday days off
 with open('holiday.txt', 'r') as f:
@@ -130,4 +153,4 @@ with open('holiday.txt', 'r') as f:
 #Save the file with filename lastname_firstname
 with open('DayOffList.pickle', 'wb') as f:
     pickle.dump(DayOff, f)
-    
+"""    
