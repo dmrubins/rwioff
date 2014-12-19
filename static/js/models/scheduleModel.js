@@ -23,7 +23,7 @@ app.scheduleModel = Backbone.Model.extend({
 		var residents = new app.residentsOffCollection();
 		var sm = this;
 
-		$.ajax('/on/' + date)
+		$.ajax('/interns/off/' + date)
 			.done(function(data){
 				//console.log(data);
 				data = $.parseJSON(data);
