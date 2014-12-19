@@ -34,13 +34,13 @@ def get_interns_for_date(date):
 	return json_residents_off(dt, intern_schedules)
 
 @app.route("/juniors/off/<date>")
-def get_interns_for_date(date):
+def get_juniors_for_date(date):
 	global junior_schedules
 	dt = datetime.strptime(date, '%Y%m%d')
 	return json_residents_off(dt, junior_schedules)
 
 @app.route("/seniors/off/<date>")
-def get_interns_for_date(date):
+def get_seniors_for_date(date):
 	global senior_schedules
 	dt = datetime.strptime(date, '%Y%m%d')
 	return json_residents_off(dt, senior_schedules)
