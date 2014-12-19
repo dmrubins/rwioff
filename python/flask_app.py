@@ -24,8 +24,7 @@ def hello_world():
 
 def json_residents_off(dt, schedules):
 	t = schedules.get_residents_off_for_date( dt )
-    j = { "names" : [x[0] for x in t],
-         "blocks" : [x[1] for x in t]}
+    j = { "names" : [x[0] for x in t], "blocks" : [x[1] for x in t]}
     return json.dumps(j)
 
 @app.route("/interns/off/<date>")
