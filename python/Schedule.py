@@ -98,11 +98,11 @@ class Schedule():
         self.date_range = date_range
         self.name = name
         self.tzinfo = None
-        self.fix_name()
+        self.name = Schedule.fix_name(self.name)
         print(self.name)
 
-    def fix_name(self):
-        n = self.name
+    @classmethod
+    def fix_name(cls, n):
         m = re.search("(.*?), (\w*)\(?", n, re.I)
         if m is not None:
             lastname = m.group(1)
@@ -114,7 +114,7 @@ class Schedule():
         if m is not None and re.search("(MD|MM|Neu|Pre|Neu|HVMA|DGM|GHE|MP|MA|HEMI|MBA)", m.group(1)) is None:
             firstname = m.group(1)
 
-        self.name = firstname + " " + lastname
+        return firstname + " " + lastname
 
     def _add_ica_event_to_schedule(self, start_date, end_date, summary):
         #print("Start: {}, End: {}, Summary: {}".format(start_date, end_date, summary))
@@ -254,6 +254,11 @@ class Schedules():
             if s.is_off_on(dt):
                 off_residents.append( (s.get_resident(), s.get_block(dt)) )
         return off_residents
+
+    def get_schedule_for_resident(self, resident):
+        for s in self.schedules:
+            if re.search(resident, s.get_resident(), re.I):
+                return s
 
 class InternSchedule(Schedule):
 

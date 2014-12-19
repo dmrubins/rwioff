@@ -99,6 +99,35 @@ for m in re.finditer(pattern, seniors, re.I):
     schedule.create_from_ical(cal)
     senior_schedules.add(schedule)
 
+
+
+#Open the txt file with the holiday days off
+with open('Holiday Schedule.txt', 'r') as f:
+    for line in f:
+        m = re.match('(.*?);(.*)', line)
+        dt =  datetime.strptime(m.group(2).strip(), '%m/%d/%Y')
+        name = Schedule.fix_name(m.group(1))
+
+        s = intern_schedules.get_schedule_for_resident(name)
+        if s is None:
+            s = junior_schedules.get_schedule_for_resident(name)
+            if s is None:
+                s = senior_schedules.get_schedule_for_resident(name)
+
+        if s is None:
+            print("Error finding schedule for {}".format(name))
+            input('')
+
+        day = datetime.strftime(dt, DATESTR)
+        temp = ((intern_name,"Holiday Shift"),)
+        if DayOff.get(day) is not None:    
+            print(intern_name)
+            DayOff[day] = DayOff[day] + temp
+        else:
+            print(intern_name)
+            DayOff[day] = temp
+
+
 #Save the file with filename lastname_firstname
 with open('InternSchedules.pickle', 'wb') as f:
     pickle.dump(intern_schedules, f)
@@ -108,23 +137,3 @@ with open('JuniorSchedules.pickle', 'wb') as f:
 
 with open('SeniorSchedules.pickle', 'wb') as f:
     pickle.dump(senior_schedules, f)
-
-'''
-#Open the txt file with the holiday days off
-with open('holiday.txt', 'r') as f:
-    for line in f:
-        m = re.match('(.*?);(.*)', line)
-        dt =  datetime.strptime(m.group(2).strip(), '%m/%d/%Y')
-        m = re.match("(.*?), (\w*)\(?", m.group(1), re.I)
-        if m:
-            intern_name = m.group(2) + " " + m.group(1) 
-    
-        day = datetime.strftime(dt, DATESTR)
-        temp = ((intern_name,"Holiday Shift"),)
-        if DayOff.get(day) is not None:    
-            print(intern_name)
-            DayOff[day] = DayOff[day] + temp
-        else:
-            print(intern_name)
-            DayOff[day] = temp
-'''
