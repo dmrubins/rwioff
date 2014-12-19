@@ -6,6 +6,7 @@ app.scheduleView = Backbone.View.extend({
 
 	render : function(){
 		t = this.residentListTemplate( this.model.toJSON() )
+		alert(t)
 		this.$el.html( t );
 		return this;
 	}

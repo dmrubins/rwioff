@@ -12,7 +12,7 @@ DATESTR = '%Y-%m-%d'
 
 class Shift():
     
-    def __init__(self, start_dt=datetime.datetime(), end_dt = datetime.datetime(), summary = None):
+    def __init__(self, start_dt=datetime.now(), end_dt = datetime.now(), summary = None):
         self.summary = summary
         self.start_dt = start_dt
         self.end_dt = end_dt
@@ -40,16 +40,18 @@ class Shift():
     def is_day_off(self):
         return False
 
-class DayOff(shift)
-    def __init__(self):
-        self.set_summary("Day Off")
-
+class DayOff(Shift):
+    def __init__(self, dt):
+        Shift.__init__(self, dt, dt, "Day Off")
+   
     def is_day_off(self):
         return True
 
 class Block():
     
     def __init__(self, dt, summary):
+        if not hasattr(dt, "time"):
+            dt = datetime.combine(dt, datetime.now().replace(hour=0).time())
         self.dt = dt
         self.summary = summary
 
@@ -60,6 +62,7 @@ class Block():
         return self.summary
 
     def is_(self, block_name):
+        #print(self.get_summary())
         return re.search(block_name, self.get_summary(), re.IGNORECASE)
 
 class Shifts():
@@ -93,6 +96,7 @@ class Schedule():
         self.shifts = Shifts()
         self.date_range = date_range
         self.name = name
+        self.tzinfo = None
     
     def _add_ica_event_to_schedule(self, start_date, end_date, summary):
         #print("Start: {}, End: {}, Summary: {}".format(start_date, end_date, summary))
@@ -115,17 +119,32 @@ class Schedule():
             shift = self.shifts.get(dt)
             
             if block is None:
+                print(dt)
+                if shift is not None:
+                    print("Shift is {} ".format(shift.get_summary()))
                 # If both the block and shift don't exist, look at the previous/next day
-                if shift is None:
+                if shift is None or re.search("(AM:|PM:)", shift.get_summary(), re.I):
                     next_shift = self.shifts.get( dt + timedelta(1) )
+                    prev_shift = self.shifts.get( dt - timedelta(1) )
                     if next_shift is None:
-                        #TODO
-                        continue
-                    block_name = self._get_block_name_from_shift(next_shift)
-
+                        if prev_shift is None:
+                            block_name = "Vacation"
+                        else:
+                            print("Previous shift {}".format(prev_shift.get_summary()))
+                            block_name = self._get_block_name_from_shift(prev_shift)
+                            print('Look at previous shift: {}'.format(block_name))
+                    else:
+                        print('Next shift is {}:'.format(next_shift.get_summary()))
+                        block_name = self._get_block_name_from_shift(next_shift)
+                        print('Look at next shift: {}'.format(block_name))
+               
                 # If the block doesn't exist, look at the shift
                 else:
                     block_name = self._get_block_name_from_shift(shift)
+                    print('Look at current shift: {}'.format(block_name))
+
+                if re.search("none", block_name, re.I):
+                    input('')
 
                 #Create the new block using derived data
                 block = Block(dt, block_name)
@@ -178,6 +197,8 @@ class Schedule():
         self.blocks.add(block)
         
     def add_shift(self, shift):
+        if self.tzinfo is None:
+            self.tzinfo = shift.start_dt.tzinfo
         self.shifts.add(shift)
             
     def get_shift_for_date(self, dt):
@@ -188,7 +209,7 @@ class Schedule():
 
     def is_off_on(self, dt):
         shift = self.shifts.get(dt)
-        return shift.is_day_off():
+        return shift.is_day_off()
 
         shift = self.shifts.get(dt) # get the shift for the date
         if shift is not None:
@@ -278,7 +299,7 @@ class Schedules():
 
     def get_residents_off_for_date(self, dt):
         off_residents = []
-        for s in schedules:
+        for s in self.schedules:
             if s.is_off_on(dt):
                 off_residents.append( s.get_resident() )
 
@@ -289,7 +310,7 @@ class InternSchedule(Schedule):
         # Format of XXXX long/short intern #
         # ITU, MICU, GMS, VA-Cards, CHF, Onc-A, Onc-C, CCU, MICU, Cards, FGMS
         #print( shift.get_summary() )
-        m = re.search('(?:Call )?(.*?) (?:long|short|post-night) ', shift.get_summary(), re.I)
+        m = re.search('(?:Call )?(.*?) (?:long|short|post-night|day|night) ', shift.get_summary(), re.I)
         if m is not None:
             return m.group(1)
 
@@ -299,53 +320,80 @@ class InternSchedule(Schedule):
         if m is not None:
             block = m.group(1) + m.group(2)
             return block
+        
+        # Format Cards nightfloat
+        m = re.search('(.*?) nightfloat', shift.get_summary(), re.I)
+        if m is not None:
+            return m.group(1) + " Nightfloat"
 
         # XXXX twilight intern 
         # GMS
         m = re.search('(.*?) twilight', shift.get_summary(), re.I )        
         if m is not None:
-            return m.group(1) + 'Twilight'
+            return m.group(1) + ' Twilight'
+
+        # IN-DPH
+        m = re.search('IN-DPH', shift.get_summary(), re.I )
+        if m is not None:
+            return "IN-DPH"
+        
+        # Day off
+        m = re.search("Day Off", shift.get_summary(), re.I )
+        if m is not None:
+            return "Day Off"
+        
+        m = re.search("GMS", shift.get_summary(), re.I )
+        if m is not None:
+            return "GMS"
 
     def _get_shift_from_block(self, block, prev_shift):
         
         dt = block.dt
         isWeekend = dt.weekday() == 5 or dt.weekday() == 6            
         standard_shift = Shift(dt.replace(hour=7), dt.replace(hour=5), block.get_summary())
+        day_off = DayOff(block.dt)
 
         # For Amby, elective, peds, anesthesia, assume that all weekday shifts are 8-5
         if block.is_("Amb") or self.is_block_(block, "pcar") or self.is_block_(block, "hvm") or block.is_("elec") or block.is_("PEDS") or block.is_("Blood") or block.is_("Anesth"):
             if isWeekend:
-                return DayOff()
+                return day_off
             else:
                 shift = Shift()
                 shift.set_summary("Amby")
-                shift.set_start(dt.replace(hour=8))
-                shift.set_end(dt.replace(hour=17))
+                shift.set_start(dt.replace(hour=8, tzinfo=self.tzinfo))
+                shift.set_end(dt.replace(hour=17, tzinfo=self.tzinfo))
                 return shift
 
-        # CCU, ITU
-        if block.is_("ITU") or block.is_("CCU"):
-            return DayOff()
+        # CCU, ITU, Onc nightfloat, MICU
+        if block.is_("ITU") or block.is_("CCU") or block.is_("Onc nightfloat") or block.is_("MICU") or block.is_("Onc-") or block.is_("FICU") or block.is_("Onc flt"):
+            return day_off
 
         # For GMS, BMT and CHF, if you don't have a shift on the weekend, you're off
         # If you don't have a shift on a weekday, you're the short intern
-        if block.is_("GMS") or block.is_("BMT") or block.is_("CHF"):
+        if block.is_("GMS") or block.is_("BMT") or block.is_("CHF") or block.is_("OFF"):
             if isWeekend:
-                return DayOff()
+                return day_off
             else:
                 return standard_shift
-
 
         # B team, VA-GMS, FGMS, VA-Cards
         # If you don't have a shift on a weekend, and the previous day you were long, then you are on
         # If you don't have a shift on a weekday, then you are pre/post call
         if block.is_("cards") or block.is_("VA-GMS") or block.is_("FGMS") or block.is_("VA-Cards"):
             if isWeekend:
-                if prev_shift is None or not re.search("long", prev_shift, re.I):
-                    return DayOff()
+                if prev_shift is None or not re.search("long", prev_shift.get_summary(), re.I):
+                    return day_off
             return standard_shift
+        
+        if block.is_("vacation") or block.is_("Holiday") or block.is_("ED") or block.is_("Day off giver") or block.is_("hol-vac"):
+            return day_off
 
-        print("Get shift failed; Block: {}".format(block.get_summary()) )
+        # DPH
+        if block.is_("IN-DPH"):
+            return day_off
+
+        print("Get shift failed; Block: {}".format(block.get_summary()))
+        input("")
 
 
 

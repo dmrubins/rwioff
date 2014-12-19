@@ -67,27 +67,33 @@ pattern = "<option value=\".*?14\*(.*)\*.*?>(.*)"
 
 #cycle through all the matches and grab the vcal identifier and the residents name
 for m in re.finditer(pattern, interns, re.IGNORECASE):
+#for i in range(1):
     vcal = m.group(1)
+    intern_name = m.group(2)
+    #vcal = '9045'
+    #intern_name = 'Rahul'
+    
+    print("Intern: {}".format(intern_name))
     cal = get_ica_file(vcal)
 
-    schedule = InternSchedule(m.group(2), dates)
+    schedule = InternSchedule(intern_name, dates)
     schedule.create_from_ical(cal)
 
 for m in re.finditer(pattern, juniors, re.I):
     vcal = m.group(1)
-    cal = get_ica_file(vcal)
+#    cal = get_ica_file(vcal)
 
-    schedule = JuniorSchedule(m.group(2), dates)
-    schedule.create_from_ical(cal)
+   # schedule = JuniorSchedule(m.group(2), dates)
+   # schedule.create_from_ical(cal)
 
 for m in re.finditer(pattern, seniors, re.I):
     vcal = m.group(1)
-    cal = get_ica_file(vcal)
+#    cal = get_ica_file(vcal)
 
-    schedule = SeniorSchedule(m.group(2), dates)
-    schedule.create_from_ical(cal)
+   # schedule = SeniorSchedule(m.group(2), dates)
+   # schedule.create_from_ical(cal)
 
-
+    #print(juniors)
 
 """
     for d in dates:
