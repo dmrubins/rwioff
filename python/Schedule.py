@@ -98,7 +98,24 @@ class Schedule():
         self.date_range = date_range
         self.name = name
         self.tzinfo = None
-    
+        self.fix_name()
+        print(self.name)
+
+    def fix_name(self):
+        n = self.name
+        m = re.search("(.*?), (\w*)\(?", n, re.I)
+        if m is not None:
+            lastname = m.group(1)
+            firstname = m.group(2)
+        else:
+            return "Shubhangi"
+
+        m = re.search("\((.*?)\)", n, re.I)
+        if m is not None and re.search("(MD|MM|Neu|Pre|Neu|HVMA|DGM|GHE|MP|MA|HEMI|MBA)", m.group(1)) is None:
+            firstname = m.group(1)
+
+        self.name = firstname + " " + lastname
+
     def _add_ica_event_to_schedule(self, start_date, end_date, summary):
         #print("Start: {}, End: {}, Summary: {}".format(start_date, end_date, summary))
         isBlock = start_date == end_date

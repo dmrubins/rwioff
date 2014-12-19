@@ -78,10 +78,7 @@ for m in re.finditer(pattern, interns, re.IGNORECASE):
     intern_name = m.group(2)
     #vcal = '9045'
     #intern_name = 'Rahul'
-    
-    print("Intern: {}".format(intern_name))
     cal = get_ica_file(vcal)
-
     schedule = InternSchedule(intern_name, dates)
     schedule.create_from_ical(cal)
     intern_schedules.add(schedule)
@@ -90,7 +87,6 @@ for m in re.finditer(pattern, juniors, re.I):
     vcal = m.group(1)
     res_name = m.group(2)
     cal = get_ica_file(vcal)
-    print("Junior: {}".format(res_name))
     schedule = JuniorSchedule(res_name, dates)
     schedule.create_from_ical(cal)
     junior_schedules.add(schedule)
@@ -99,19 +95,18 @@ for m in re.finditer(pattern, seniors, re.I):
     vcal = m.group(1)
     res_name = m.group(2)
     cal = get_ica_file(vcal)
-    print("Senior: {}".format(res_name))
-    schedule = SeniorSchedule(m.group(2), dates)
+    schedule = SeniorSchedule(res_name, dates)
     schedule.create_from_ical(cal)
     senior_schedules.add(schedule)
 
 #Save the file with filename lastname_firstname
 with open('InternSchedules.pickle', 'wb') as f:
-    pickle.dump(intern_schedules, f, protocol=2)
+    pickle.dump(intern_schedules, f)
 
-with open('JuniorSchedules.pickle', 'wb', protocol=2) as f:
+with open('JuniorSchedules.pickle', 'wb') as f:
     pickle.dump(junior_schedules, f)
 
-with open('SeniorSchedules.pickle', 'wb', protocol=2) as f:
+with open('SeniorSchedules.pickle', 'wb') as f:
     pickle.dump(senior_schedules, f)
 
 
