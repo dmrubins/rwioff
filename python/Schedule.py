@@ -148,17 +148,19 @@ class Schedule():
 
                 #Create the new block using derived data
                 block = Block(dt, block_name)
+                self.blocks.add( block )
+
+        #Separate out the shift from the block to do the prev/next look correctly
+        for dt in self.date_range:
+            # Get the block/shift for the day
+            block = self.blocks.get(dt)
+            shift = self.shifts.get(dt)
 
             # If the shift doesn't exist, look at the block
             if shift is None:
                 prev_shift = self.shifts.get( dt - timedelta(1) )
                 shift = self._get_shift_from_block(block, prev_shift)
-
-            # Add the block/shift back to the maps
-            if shift is not None and block is not None:
-                self.blocks.add( block )
-                self.shifts.add( shift )
-
+                self.shifts.add( shift )                
 
     def create_from_ical(self, cal):
         for component in cal.walk('vevent'):
@@ -210,75 +212,6 @@ class Schedule():
     def is_off_on(self, dt):
         shift = self.shifts.get(dt)
         return shift.is_day_off()
-
-        shift = self.shifts.get(dt) # get the shift for the date
-        if shift is not None:
-            #print('On {}, you are on {}'.format(date, shift.get_summary()))
-            return False
-            
-        if shift is None: #if there is no shift for that day    
-        #    print('On {}, you are on None'.format(date))
-
-            block = self.blocks.get(datetime.strftime(dt, DATESTR)) # get the block for the day
-            if block is None:
-                return True
-            
-            isWeekend = dt.weekday() == 5 or dt.weekday() == 6
-            isHoliday = dt > date(2014,12,23) and dt < date(2015,1,3)
-            isVacation = self.is_block_(block, "vac") or self.is_block_(block, "hol")
-            
-            #print('Date: {}, isHoliday: {}'.format(datetime.strftime(dt, DATESTR), isHoliday))
-            
-            #Is it a holiday/vacation
-            if isHoliday and isVacation:
-                return True
-            elif isHoliday:
-                return False                
-            
-            #If off medicine service
-            if self.is_block_(block, "OFF"):
-                return False
-            
-            # Check if Amby week
-            isAmby = self.is_block_(block, "Amb") or self.is_block_(block, "pcar") or self.is_block_(block, "hvm")
-            isElec = self.is_block_(block, "elec")
-            isPeds = self.is_block_(block, "PEDS")
-            isAnesth = self.is_block_(block, "Anesth") or self.is_block_(block, "Blood")
-            if isAmby or isElec or isPeds or isAnesth:
-                if isWeekend:  # on Amby, you get weekends off
-                    return True
-                else:
-                    return False
-        
-            # Check if Cards
-            isCards = self.is_block_(block, "cards")
-            isFGMS = self.is_block_(block, "FGMS")
-            isVAGMS = self.is_block_(block, "VA-GMS")
-            if isFGMS or isCards or isVAGMS:
-                if isWeekend:
-                    #If on call Friday, you're on on Saturday
-                    previous_date = dt - timedelta(1) #Get previous day
-                    previous_shift = self.shifts.get(previous_date) # Get previous shift
-                    if previous_date.weekday() == 4 and previous_shift is not None: #If previous day is Friday and their was a shift
-                        if re.search("long", previous_shift.get_summary(), re.IGNORECASE):
-                            return False
-                        else:
-                            return True
-                    else:
-                        return True                    
-                else:
-                    return False
-        
-            # Check if BMT or CHF
-            isBMT = self.is_block_(block, "BMT")
-            isCHF = self.is_block_(block, "CHF")
-            if isBMT or isCHF:
-                if isWeekend:
-                    return True
-                else:
-                    return False
-        
-        return True
     
     def is_block_(self, block, block_title):
         return re.search(block_title, block.get_summary(), re.IGNORECASE)
@@ -435,41 +368,49 @@ class JuniorSchedule(Schedule):
         dt = block.dt
         isWeekend = dt.weekday() == 5 or dt.weekday() == 6            
         standard_shift = Shift(dt.replace(hour=7), dt.replace(hour=5), block.get_summary())
+        day_off = DayOff(block.dt)
 
         # For Amby, elective, peds, anesthesia, assume that all weekday shifts are 8-5
-        if block.is_("Amb") or self.is_block_(block, "pcar") or self.is_block_(block, "hvm") or block.is_("elec") or block.is_("PEDS") or block.is_("Blood") or block.is_("Anesth"):
+        if block.is_("Amb") or self.is_block_(block, "pcar") or self.is_block_(block, "hvm") or block.is_("elec") or block.is_("PEDS") or block.is_("Blood") or block.is_("Anesth") or block.is_('geria'):
             if isWeekend:
-                return DayOff()
+                return day_off
             else:
                 shift = Shift()
                 shift.set_summary("Amby")
-                shift.set_start(dt.replace(hour=8))
-                shift.set_end(dt.replace(hour=17))
+                shift.set_start(dt.replace(hour=8, tzinfo=self.tzinfo))
+                shift.set_end(dt.replace(hour=17, tzinfo=self.tzinfo))
                 return shift
 
-        # CCU, ITU
-        if block.is_("ITU") or block.is_("CCU"):
-            return DayOff()
+        # CCU, ITU, Onc nightfloat, MICU
+        if block.is_("ITU") or block.is_("CCU") or block.is_("Onc nightfloat") or block.is_("MICU") or block.is_("Onc-") or block.is_("FICU") or block.is_("Onc flt"):
+            return day_off
 
         # For GMS, BMT and CHF, if you don't have a shift on the weekend, you're off
         # If you don't have a shift on a weekday, you're the short intern
-        if block.is_("GMS") or block.is_("BMT") or block.is_("CHF"):
+        if block.is_("GMS") or block.is_("BMT") or block.is_("CHF") or block.is_("OFF"):
             if isWeekend:
-                return DayOff()
+                return day_off
             else:
                 return standard_shift
-
 
         # B team, VA-GMS, FGMS, VA-Cards
         # If you don't have a shift on a weekend, and the previous day you were long, then you are on
         # If you don't have a shift on a weekday, then you are pre/post call
         if block.is_("cards") or block.is_("VA-GMS") or block.is_("FGMS") or block.is_("VA-Cards"):
             if isWeekend:
-                if prev_shift is None or not re.search("long", prev_shift, re.I):
-                    return DayOff()
+                if prev_shift is None or not re.search("long", prev_shift.get_summary(), re.I):
+                    return day_off
             return standard_shift
+        
+        if block.is_("vacation") or block.is_("Holiday") or block.is_("ED") or block.is_("Day off giver") or block.is_("hol-vac"):
+            return day_off
 
-        print("Get shift failed; Block: {}".format(block.get_summary()) )
+        # DPH
+        if block.is_("IN-DPH"):
+            return day_off
+
+        print("Get shift failed; Block: {}".format(block.get_summary()))
+        input("")
 
 
 
