@@ -5,12 +5,11 @@ app.scheduleModel = Backbone.Model.extend({
 	defaults: {
 		schedule : Array(),
 		residents : new app.residentsOffCollection(),
-		currentDate : new Date(),
-		pgy : "interns"
+		pgy : "interns",
 	}, 
 
 	initialize : function(){
-		this.on('change:currentDate', this.getResidentsOffForDate);
+		this.listenTo(this.get('dateModel'), 'change:currentDate', this.getResidentsOffForDate);
 	},
 
 	setDate : function(date){
@@ -19,7 +18,8 @@ app.scheduleModel = Backbone.Model.extend({
 
 	getResidentsOffForDate: function(){
 		//console.log('get residents for date called');
-		date = $.datepicker.formatDate( "yymmdd", this.get('currentDate') );
+		currentDate = this.get('dateModel').get('currentDate');
+		date = $.datepicker.formatDate( "yymmdd", currentDate );
 
 		var residents = new app.residentsOffCollection();
 		var sm = this;

@@ -109,23 +109,7 @@ with open('JuniorSchedules.pickle', 'wb') as f:
 with open('SeniorSchedules.pickle', 'wb') as f:
     pickle.dump(senior_schedules, f)
 
-
-
-"""
-    for d in dates:
-        day = datetime.strftime(d,DATESTR)
-        isOff = schedule.is_off_on(d)
-        if isOff:
-            temp = ((intern_name,schedule.get_block(d)),)
-            if DayOff.get(day) is not None:    
-                DayOff[day] = DayOff[day] + temp
-            else:
-                DayOff[day] = temp
-    
-
-
-
-
+'''
 #Open the txt file with the holiday days off
 with open('holiday.txt', 'r') as f:
     for line in f:
@@ -143,9 +127,4 @@ with open('holiday.txt', 'r') as f:
         else:
             print(intern_name)
             DayOff[day] = temp
-
-
-#Save the file with filename lastname_firstname
-with open('DayOffList.pickle', 'wb') as f:
-    pickle.dump(DayOff, f)
-"""    
+'''

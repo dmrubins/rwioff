@@ -15,6 +15,7 @@ app.datePickerView = Backbone.View.extend({
 		this.dp.datepicker({
 			onSelect: function(){ 
 				s.model.setDate(s.dp.datepicker('getDate')) ;
+				s.updateHeading(s.dp.datepicker('getDate')) ;
 			} ,
 			changeMonth: true,
 			changeYear: true,
@@ -24,9 +25,6 @@ app.datePickerView = Backbone.View.extend({
 			showOtherMonths : true,
 			selectOtherMonths : true
 		});
-
-		this.listenTo(this.model, 'change:currentDate', this.updateHeading)
-
 	},
 
 	updateHeading : function (){

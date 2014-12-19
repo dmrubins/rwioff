@@ -21,6 +21,7 @@
 <script type="text/javascript" src="js/libs/underscore.js"></script>
 <script type="text/javascript" src="js/libs/backbone.js"></script>
 <script type="text/javascript" src="js/models/residentOffForDayModel.js"></script>
+<script type="text/javascript" src="js/models/datePickerModel.js"></script>
 <script type="text/javascript" src="js/collections/residentsOffCollection.js"></script>
 <script type="text/javascript" src="js/models/scheduleModel.js"></script>
 <script type="text/javascript" src="js/views/residentBlockView.js"></script>
@@ -36,21 +37,20 @@ pad = function (val, len) {
         return val;
 	};
 
-internSchedule = new app.scheduleModel({pgy: "interns"});
-juniorSchedule = new app.scheduleModel({pgy: "juniors"});
-seniorSchedule = new app.scheduleModel({pgy: "seniors"});
 
 $(function(){
+	dm = new app.datePickerModel();
 	d = new app.datePickerView({model: internSchedule, el: $('#datepicker')});
 	d.render();
 
-	new app.residentBlockView({model : internSchedule, el : $('#InternOffList') })
+	internSchedule = new app.scheduleModel({pgy: "interns", dateModel : dm});
+	juniorSchedule = new app.scheduleModel({pgy: "juniors", dateModel : dm});
+	seniorSchedule = new app.scheduleModel({pgy: "seniors", dateModel : dm});
+
+	new app.residentBlockView({model : internSchedule, el : $('#InternOffList')})
 	new app.residentBlockView({model : juniorSchedule, el : $('#JuniorOffList') })
 	new app.residentBlockView({model : seniorSchedule, el : $('#SeniorOffList') })
-	internSchedule.getResidentsOffForDate(new Date())
-	juniorSchedule.getResidentsOffForDate(new Date())
-	seniorSchedule.getResidentsOffForDate(new Date())
-
+	
 	email = new app.emailView({el : $("#internemail"), model : internSchedule})
 
 })
