@@ -52,6 +52,8 @@ $(function(){
 	new app.residentBlockView({model : seniorSchedule, el : $('#SeniorOffList') })
 	
 	email = new app.emailView({el : $("#internemail"), model : internSchedule})
+	email = new app.emailView({el : $("#junioremail"), model : juniorSchedule})
+	email = new app.emailView({el : $("#senioremail"), model : seniorSchedule})
 
 })
 </script>
