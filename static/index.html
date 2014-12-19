@@ -40,7 +40,7 @@ pad = function (val, len) {
 
 $(function(){
 	dm = new app.datePickerModel();
-	d = new app.datePickerView({model: internSchedule, el: $('#datepicker')});
+	d = new app.datePickerView({model: dm, el: $('#datepicker')});
 	d.render();
 
 	internSchedule = new app.scheduleModel({pgy: "interns", dateModel : dm});
