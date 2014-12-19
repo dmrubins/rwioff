@@ -10,6 +10,7 @@ app.scheduleModel = Backbone.Model.extend({
 
 	initialize : function(){
 		this.listenTo(this.get('dateModel'), 'change:currentDate', this.getResidentsOffForDate);
+		this.getResidentsOffForDate();
 	},
 
 	setDate : function(date){
