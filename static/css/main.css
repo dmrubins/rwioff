@@ -30,3 +30,7 @@ div#datepicker, .ui-datepicker{
 li.ED, li.DPH{
 	color:gray;
 }
+
+html {
+	overflow-y: scroll;
+}
