@@ -1,4 +1,4 @@
-from Schedule import Schedules, Schedule
+from Schedule import Schedules, Schedule, DayOff
 import pickle
 from datetime import datetime
 import re
@@ -13,13 +13,13 @@ with open("SeniorSchedules.pickle", 'rb') as f:
 #Open the txt file with the holiday days off
 with open('Holiday Schedule.txt', 'r') as f:
     for line in f:
-        print(line)
         m = re.match('\"(.*?)\".*;(.*)', line)
-        dt =  datetime.strptime(m.group(2).strip(), '%m/%d/%Y')
-        name = Schedule.fix_name(m.group(1))
+        if m is not None:
+            dt =  datetime.strptime(m.group(2).strip(), '%m/%d/%Y')
+            name = Schedule.fix_name(m.group(1))
+        else:
+            name = "Shubhangi"
     
-        print(name)
-
         s = intern_schedules.get_schedule_for_resident(name)
         if s is None:
             s = junior_schedules.get_schedule_for_resident(name)
@@ -29,3 +29,6 @@ with open('Holiday Schedule.txt', 'r') as f:
         if s is None:
             print("Error finding schedule for {}".format(name))
             input('')
+
+        s.add_shift( DayOff(dt) )
+        print( s.is_off_on(dt) )

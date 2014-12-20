@@ -174,6 +174,15 @@ class Schedule():
             block = self.blocks.get(dt)
             shift = self.shifts.get(dt)
 
+            # If is holiday, then set standard shift continue
+            if dt > date(2014,12,23) and dt < date(2015,1,3) and not (block.is_('Holiday') or block.is_('Vacation') or block.is_('hol-vac') ):
+                sss = datetime.combine(dt, datetime.now().replace(hour=7).time())
+                sse = datetime.combine(dt, datetime.now().replace(hour=5).time())
+                standard_shift = Shift(sss, sse, block.get_summary())
+                self.shifts.add( standard_shift )
+                continue
+            
+
             # If the shift doesn't exist, look at the block
             if shift is None:
                 prev_shift = self.shifts.get( dt - timedelta(1) )
