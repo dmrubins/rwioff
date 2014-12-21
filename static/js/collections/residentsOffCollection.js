@@ -1,7 +1,7 @@
 var app = app || {};
 
-app.residentsOffCollection = Backbone.Collection.extend({
-	model : app.residentOffForDayModel,
+app.residentsCollection = Backbone.Collection.extend({
+	model : app.residentModel,
 
 	comparator : function(resident){
 		return resident.get('name');

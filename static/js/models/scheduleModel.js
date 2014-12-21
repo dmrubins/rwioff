@@ -38,10 +38,7 @@ app.scheduleModel = Backbone.Model.extend({
 				sm.set('residents' , residents);
 				console.log(residents.size())
 				residents.getEmails();
-			})
-
-		
+			})		
 	}
-
 
 })

@@ -96,7 +96,7 @@ class Schedule():
         self.blocks = Blocks()
         self.shifts = Shifts()
         self.date_range = date_range
-        self.name = resident
+        self.resident = resident
         self.tzinfo = None
         print(self.resident.get_name())
 

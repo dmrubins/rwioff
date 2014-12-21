@@ -75,27 +75,28 @@ senior_schedules = Schedules()
 for m in re.finditer(pattern, interns, re.IGNORECASE):
 #for i in range(1):
     vcal = m.group(1)
-    intern_name = m.group(2)
-    #vcal = '9045'
-    #intern_name = 'Rahul'
+    res_name = m.group(2)
+    resident = Resident(vcal, res_name)
     cal = get_ica_file(vcal)
-    schedule = InternSchedule(intern_name, dates)
+    schedule = InternSchedule(resident, dates)
     schedule.create_from_ical(cal)
     intern_schedules.add(schedule)
 
 for m in re.finditer(pattern, juniors, re.I):
     vcal = m.group(1)
     res_name = m.group(2)
+    resident = Resident(vcal, res_name)
     cal = get_ica_file(vcal)
-    schedule = JuniorSchedule(res_name, dates)
+    schedule = JuniorSchedule(resident, dates)
     schedule.create_from_ical(cal)
     junior_schedules.add(schedule)
 
 for m in re.finditer(pattern, seniors, re.I):
     vcal = m.group(1)
     res_name = m.group(2)
+    resident = Resident(vcal, res_name)
     cal = get_ica_file(vcal)
-    schedule = SeniorSchedule(res_name, dates)
+    schedule = SeniorSchedule(resident, dates)
     schedule.create_from_ical(cal)
     senior_schedules.add(schedule)
 

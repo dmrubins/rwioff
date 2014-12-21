@@ -31,4 +31,13 @@ with open('Holiday Schedule.txt', 'r') as f:
             input('')
 
         s.add_shift( DayOff(dt) )
-        print( s.is_off_on(dt) )
+
+#Save the file with filename lastname_firstname
+with open('InternSchedules.pickle', 'wb') as f:
+    pickle.dump(intern_schedules, f)
+
+with open('JuniorSchedules.pickle', 'wb') as f:
+    pickle.dump(junior_schedules, f)
+
+with open('SeniorSchedules.pickle', 'wb') as f:
+    pickle.dump(senior_schedules, f)
