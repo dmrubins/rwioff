@@ -92,29 +92,13 @@ class Blocks():
 
 class Schedule():
     
-    def __init__(self, name, date_range):
+    def __init__(self, resident, date_range):
         self.blocks = Blocks()
         self.shifts = Shifts()
         self.date_range = date_range
-        self.name = name
+        self.name = resident
         self.tzinfo = None
-        self.name = Schedule.fix_name(self.name)
-        print(self.name)
-
-    @classmethod
-    def fix_name(cls, n):
-        m = re.search("(.*?), (\w*)\(?", n, re.I)
-        if m is not None:
-            lastname = m.group(1)
-            firstname = m.group(2)
-        else:
-            return "Shubhangi"
-
-        m = re.search("\((.*?)\)", n, re.I)
-        if m is not None and re.search("(MD|MM|Neu|Pre|Neu|HVMA|DGM|GHE|MP|MA|HEMI|MBA)", m.group(1)) is None:
-            firstname = m.group(1)
-
-        return firstname + " " + lastname
+        print(self.resident.get_name())
 
     def _add_ica_event_to_schedule(self, start_date, end_date, summary):
         #print("Start: {}, End: {}, Summary: {}".format(start_date, end_date, summary))
@@ -234,15 +218,19 @@ class Schedule():
         return self.shifts.get(dt)
     
     def get_resident(self):
-        return self.name
+        return self.resident
 
     def is_off_on(self, dt):
         shift = self.shifts.get(dt)
         return shift.is_day_off()
     
-    def is_block_(self, block, block_title):
-        return re.search(block_title, block.get_summary(), re.IGNORECASE)
-    
+    def get_all_days_off(self):
+        days = set() 
+        for dt in self.date_range:
+            if self.is_off_on(dt)
+                days.add( dt )
+        return days
+
     def get_block(self, dt):
         block = self.blocks.get( dt )
         if block is None:
@@ -252,10 +240,11 @@ class Schedule():
 class Schedules():
 
     def __init__(self):
-        self.schedules = []
+        self.schedules = {}
 
     def add(self, schedule):
-        self.schedules.append(schedule)
+        resident_id = schedule.get_resident().get_id()
+        self.schedules[resident_id] = schedule
 
     def get_residents_off_for_date(self, dt):
         off_residents = []
@@ -265,9 +254,44 @@ class Schedules():
         return off_residents
 
     def get_schedule_for_resident(self, resident):
-        for s in self.schedules:
-            if re.search(resident, s.get_resident(), re.I):
-                return s
+        return self.schedules.get(resident.get_id())
+        
+    def intersect_schedules(self, *args):
+        days_off = set(self.schedules[1].date_range)
+        for i in range(len(args)):
+            s = self.get_schedule_for_resident(r[i])
+            days_off = days_off & s.get_all_days_off()
+
+        return days_off
+        #Intersect days off
+
+
+class Resident():
+    @classmethod
+    def fix_name(cls, n):
+        m = re.search("(.*?), (\w*)\(?", n, re.I)
+        if m is not None:
+            lastname = m.group(1)
+            firstname = m.group(2)
+        else:
+            return "Shubhangi"
+
+        m = re.search("\((.*?)\)", n, re.I)
+        if m is not None and re.search("(MD|MM|Neu|Pre|Neu|HVMA|DGM|GHE|MP|MA|HEMI|MBA)", m.group(1)) is None:
+            firstname = m.group(1)
+
+        return firstname + " " + lastname
+
+    def __init__(self, vcal, name):
+        self.id = vcal
+        self.name = Resident.fix_name(name)
+
+    def get_id(self):
+        return self.id
+
+    def get_name(self):
+        return self.name
+
 
 class InternSchedule(Schedule):
 
