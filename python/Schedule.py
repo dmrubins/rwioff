@@ -227,7 +227,7 @@ class Schedule():
     def get_all_days_off(self):
         days = set() 
         for dt in self.date_range:
-            if self.is_off_on(dt)
+            if self.is_off_on(dt):
                 days.add( dt )
         return days
 

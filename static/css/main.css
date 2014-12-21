@@ -31,6 +31,10 @@ li.ED, li.DPH{
 	color:gray;
 }
 
+li.ED:after{
+	content:"ED";
+}
+
 html {
 	overflow-y: scroll;
 }
