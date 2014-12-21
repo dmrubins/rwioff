@@ -31,9 +31,19 @@ li.ED, li.DPH{
 	color:gray;
 }
 
-li.ED:after{
-	content:"ED";
+li.ED:after, li.DPH:after{
+	font-size: 8px;
+	color: rgba(255,0,0,0.5);
 }
+
+li.ED:after{
+	content:" ED";
+}
+
+li.DPH:after{
+	content:" DPH";
+}
+
 
 html {
 	overflow-y: scroll;
