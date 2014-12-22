@@ -4,7 +4,7 @@ app.scheduleModel = Backbone.Model.extend({
 	
 	defaults: {
 		schedule : Array(),
-		residents : new app.residentsOffCollection(),
+		residents : new app.residentsCollection(),
 		pgy : "interns",
 	}, 
 
@@ -22,7 +22,7 @@ app.scheduleModel = Backbone.Model.extend({
 		currentDate = this.get('dateModel').get('currentDate');
 		date = $.datepicker.formatDate( "yymmdd", currentDate );
 
-		var residents = new app.residentsOffCollection();
+		var residents = new app.residentsCollection();
 		var sm = this;
 
 		$.ajax('/' + this.get('pgy') + '/off/' + date)

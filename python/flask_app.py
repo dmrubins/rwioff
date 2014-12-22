@@ -5,16 +5,22 @@ from flask import Flask
 from datetime import datetime
 import pickle
 import json
+import os
 
-with open("/home/dmrubins/site/python/InternSchedules.pickle", 'rb') as f:
+if os.name is 'nt':
+	base =  "c:/users/david/copy/dev/rwioff/"
+else:
+	base = "/home/dmrubins/site/"
+
+with open(base + "python/InternSchedules.pickle", 'rb') as f:
     intern_schedules = pickle.load(f)
-with open("/home/dmrubins/site/python/JuniorSchedules.pickle", 'rb') as f:
+with open(base + "python/JuniorSchedules.pickle", 'rb') as f:
     junior_schedules = pickle.load(f)
-with open("/home/dmrubins/site/python/SeniorSchedules.pickle", 'rb') as f:
+with open(base + "python/SeniorSchedules.pickle", 'rb') as f:
     senior_schedules = pickle.load(f)
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder=base + "static/")
 
 @app.route('/')
 def hello_world():
