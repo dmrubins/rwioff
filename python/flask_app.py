@@ -5,9 +5,7 @@ from flask import Flask
 from datetime import datetime
 import pickle
 import json
-from Schedule import DATESTR
 
-global intern_schedules
 with open("/home/dmrubins/site/python/InternSchedules.pickle", 'rb') as f:
     intern_schedules = pickle.load(f)
 with open("/home/dmrubins/site/python/JuniorSchedules.pickle", 'rb') as f:
