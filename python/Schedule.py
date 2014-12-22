@@ -70,7 +70,7 @@ class Shifts():
         self.shifts = {}
         
     def add(self, shift):
-        if re.search("Jen Ctr", shift.get_summary(), re.I):
+        if re.search("PM:", shift.get_summary(), re.I):
             return
         day = shift.get_day()
         for d in day:
@@ -113,6 +113,9 @@ class Schedule():
         else:
             self.add_block( Block(start_date, str(summary)) )
     
+        #if re.search("alessa", self.get_resident().get_name(), re.I):
+        #    print("Start: {}, End: {}, Summary: {}".format(start_date, end_date, summary))
+
     def _fix_up_calendar(self):
         for dt in self.date_range:
 
@@ -154,15 +157,21 @@ class Schedule():
 
         #Separate out the shift from the block to do the prev/next look correctly
         for dt in self.date_range:
+            #if re.search("alessa", self.get_resident().get_name(), re.I):
+            #    print('Date, shift: {} {}'.format(dt, shift)        )       
+
+
             # Get the block/shift for the day
             block = self.blocks.get(dt)
             shift = self.shifts.get(dt)
 
             # If is holiday, then set standard shift continue
-            if dt > date(2014,12,23) and dt < date(2015,1,3) and not (block.is_('Holiday') or block.is_('Vacation') or block.is_('hol-vac') ):
+            if shift is None and dt > date(2014,12,23) and dt < date(2015,1,3) and not (block.is_('Holiday') or block.is_('Vacation') or block.is_('hol-vac') ):
+            #    print('Date, shift: {} {}'.format(dt, shift)   )
                 sss = datetime.combine(dt, datetime.now().replace(hour=7).time())
                 sse = datetime.combine(dt, datetime.now().replace(hour=5).time())
                 standard_shift = Shift(sss, sse, block.get_summary())
+            #    print('Date, shift: {} {}'.format(dt, standard_shift.get_summary())   )
                 self.shifts.add( standard_shift )
                 continue
             
@@ -171,7 +180,10 @@ class Schedule():
             if shift is None:
                 prev_shift = self.shifts.get( dt - timedelta(1) )
                 shift = self._get_shift_from_block(block, prev_shift)
-                self.shifts.add( shift )                
+                self.shifts.add( shift )
+
+            if self.shifts.get(dt) is None:
+                raise Error("Empty shift for resident {} on date {}".format(self.get_resident().get_name(), dt))
 
     def create_from_ical(self, cal):
         for component in cal.walk('vevent'):
@@ -222,6 +234,7 @@ class Schedule():
 
     def is_off_on(self, dt):
         shift = self.shifts.get(dt)
+        #print(shift)
         return shift.is_day_off()
     
     def get_all_days_off(self):
@@ -237,6 +250,11 @@ class Schedule():
             return "Unknown"
         return block.get_summary()
 
+    def print_schedule(self):
+        for dt in self.date_range:
+            print('Date: {}; Block: {}'.format(dt, self.blocks.get(dt).get_summary()))
+            print('Date: {}; Block: {}; Shift: {}'.format(dt, self.blocks.get(dt).get_summary(), self.shifts.get(dt).get_summary()))
+
 class Schedules():
 
     def __init__(self):
@@ -250,6 +268,7 @@ class Schedules():
         off_residents = []
         for i in self.schedules:            
             s = self.schedules[i]
+            #print(s.get_resident().get_name())
             if s.is_off_on(dt):
                 off_residents.append( (s.get_resident().get_name(), s.get_block(dt)) )
         return off_residents

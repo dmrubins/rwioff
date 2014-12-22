@@ -12,7 +12,10 @@ app.residentsCollection = Backbone.Collection.extend({
 		this.each(function(resident){
 			name = resident.get('name')
 			m = name.match(/(\w*?) (.*)/i);
-			emailStr = emailStr + m[2] + ", " + m[1] + ";"
+			try{
+				emailStr = emailStr + m[2] + ", " + m[1] + ";"
+			}catch(Error)
+			{}
 		})
 		return emailStr;
 	}
