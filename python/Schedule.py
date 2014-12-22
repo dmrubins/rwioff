@@ -248,9 +248,10 @@ class Schedules():
 
     def get_residents_off_for_date(self, dt):
         off_residents = []
-        for s in self.schedules:
+        for i in self.schedules:            
+            s = self.schedules[i]
             if s.is_off_on(dt):
-                off_residents.append( (s.get_resident(), s.get_block(dt)) )
+                off_residents.append( (s.get_resident().get_name(), s.get_block(dt)) )
         return off_residents
 
     def get_schedule_for_resident(self, resident):
