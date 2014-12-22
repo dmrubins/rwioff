@@ -9,14 +9,54 @@ import urllib.request
 from bs4 import BeautifulSoup
 from icalendar import Calendar
 from datetime import date, timedelta, datetime
-from Schedule import InternSchedule, DATESTR, Schedules
+from Schedule import Schedules
+from InternSchedule import InternSchedule
 from JuniorSchedule import JuniorSchedule
 from SeniorSchedule import SeniorSchedule
+from Resident import Resident, Residents
 import pickle
 
 ########################################
 BASE_URL = 'http://www.amion.com/cgi-bin/ocs'
 PASSWORD = b"bwh07"
+########################################
+
+
+########################################
+def get_ica_file(vcal):
+    #Download the ICA file
+    req = urllib.request.Request(BASE_URL + "?Vcal=7." + vcal + "&Lo=bwh07&Jd=6558")
+    f = urllib.request.urlopen(req)
+
+    #Read the calendar into a cal variable
+    return Calendar.from_ical(f.read())
+
+
+def create_schedules_from_ica(resident_str, scheduleClass):
+    #pattern to get the vcal identifier 
+    pattern = "<option value=\".*?14\*(.*)\*.*?>(.*)"
+    
+    # Enumerate the date range
+    start_date = datetime.now().date()
+    end_date = date(2015, 6, 20) #last day of this year
+    dates = [start_date + timedelta(i) for i in range(int ( (end_date - start_date).days ))]
+
+    s = Schedules()
+    r = set()
+    for m in re.finditer(pattern, resident_str, re.IGNORECASE):
+        vcal = m.group(1)
+        res_name = m.group(2)
+        if re.search("(SubI|OB I|ED Intern)", res_name, re.I):
+            #print(res_name)
+            continue 
+        resident = Resident(vcal, res_name)
+        cal = get_ica_file(vcal)
+        schedule = scheduleClass(resident, dates)
+        schedule.create_from_ical(cal)
+        s.add(schedule)
+        r.add(resident)
+    return s, r
+
 ########################################
 
 # log in to amion
@@ -50,55 +90,16 @@ for select in selects:
     if (options.contents[0] == "Seniors\n"):
         seniors = str(options.contents[1])
 
-# Enumerate all the potential dates
-start_date = datetime.now().date()
-end_date = date(2015, 6, 20) #last day of this year
-dates = [start_date + timedelta(i) for i in range(int ( (end_date - start_date).days ))]
-
-def get_ica_file(vcal):
-    #Download the ICA file
-    req = urllib.request.Request(BASE_URL + "?Vcal=7." + vcal + "&Lo=bwh07&Jd=6558")
-    f = urllib.request.urlopen(req)
-
-    #Read the calendar into a cal variable
-    return Calendar.from_ical(f.read())
-
-#pattern to get the vcal identifier 
-pattern = "<option value=\".*?14\*(.*)\*.*?>(.*)"
-
-intern_schedules = Schedules()
-junior_schedules = Schedules()
-senior_schedules = Schedules()
-
 #cycle through all the matches and grab the vcal identifier and the residents name
+intern_schedules, interns = create_schedules_from_ica(interns, InternSchedule)
+junior_schedules, juniors = create_schedules_from_ica(juniors, JuniorSchedule)
+senior_schedules, seniors = create_schedules_from_ica(seniors, SeniorSchedule)
 
-for m in re.finditer(pattern, interns, re.IGNORECASE):
-#for i in range(1):
-    vcal = m.group(1)
-    res_name = m.group(2)
-    resident = Resident(vcal, res_name)
-    cal = get_ica_file(vcal)
-    schedule = InternSchedule(resident, dates)
-    schedule.create_from_ical(cal)
-    intern_schedules.add(schedule)
+residents = Residents(interns | juniors | seniors)
 
-for m in re.finditer(pattern, juniors, re.I):
-    vcal = m.group(1)
-    res_name = m.group(2)
-    resident = Resident(vcal, res_name)
-    cal = get_ica_file(vcal)
-    schedule = JuniorSchedule(resident, dates)
-    schedule.create_from_ical(cal)
-    junior_schedules.add(schedule)
-
-for m in re.finditer(pattern, seniors, re.I):
-    vcal = m.group(1)
-    res_name = m.group(2)
-    resident = Resident(vcal, res_name)
-    cal = get_ica_file(vcal)
-    schedule = SeniorSchedule(resident, dates)
-    schedule.create_from_ical(cal)
-    senior_schedules.add(schedule)
+# Compile a list of residents
+with open('Residents.pickle', 'wb') as f:
+    pickle.dump(residents, f)
 
 #Save the file with filename lastname_firstname
 with open('InternSchedules.pickle', 'wb') as f:

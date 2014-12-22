@@ -49,7 +49,7 @@ class JuniorSchedule(Schedule):
         day_off = DayOff(block.dt)
 
         # For Amby, elective, peds, anesthesia, assume that all weekday shifts are 8-5
-        if block.is_("Amb") or self.is_block_(block, "pcar") or self.is_block_(block, "hvm") or block.is_("elec") or block.is_("PEDS") or block.is_("Blood") or block.is_("Anesth") or block.is_('geria') or block.is_("GHE") or block.is_('Jen Ctr'):
+        if block.is_("Amb") or block.is_("pcar") or block.is_("hvm") or block.is_("elec") or block.is_("PEDS") or block.is_("Blood") or block.is_("Anesth") or block.is_('geria') or block.is_("GHE") or block.is_('Jen Ctr'):
             if isWeekend:
                 return day_off
             else:
