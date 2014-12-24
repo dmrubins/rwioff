@@ -2,31 +2,44 @@ var app = app || {};
 
 app.offTogetherView = Backbone.View.extend({
 	
-	template : _.template(), 
+  availableTags : {"res_name": ['David', 'Ravi', 'Peter', 'Daniel Oxman', 'Josh Apple'], 'id': ['253', '234','112','1234','34243','1231']},
+  ac : null,
 
-	availableTags : null,
 
-    $( "#tags" )
-      // don't navigate away from the field on tab when selecting an item
-      .bind( "keydown", function( event ) {
-        if ( event.keyCode === $.ui.keyCode.TAB &&
-            $( this ).autocomplete( "instance" ).menu.active ) {
+  initialize : function(){
+
+    //Create the autocomplete 
+    this.ac = $("<input size='50' />");
+    this.ac.bind('keydown', function( event ) {
+      if ( event .keyCode === $.ui.keyCode.TAB && $( this ).autocomplete( "instance" ).menu.active ) {
           event.preventDefault();
+      }
+    });
+
+    var availableTags = this.availableTags;
+
+    this.ac.autocomplete({
+      minLength: 0,
+
+      source : function ( request, response ){
+      var matcher = new RegExp( $.ui.autocomplete.escapeRegex(request.term), "i" );
+
+      temp = Array();
+      for (var i = 0; i < availableTags['res_name'].length; i++) {
+        if (matcher.test(availableTags['res_name'][i])) {
+          temp.push(availableTags['res_name'][i])
         }
-      })
-      .autocomplete({
-        minLength: 0,
-        source: function( request, response ) {
-          // delegate back to autocomplete, but extract the last term
-          response( $.ui.autocomplete.filter(
-            this.availableTags, split( request.term ).pop() ) );
-        },
-        focus: function() {
+      }
+
+      response(temp);
+      },
+      
+      focus: function() {
           // prevent value inserted on focus
           return false;
         },
         select: function( event, ui ) {
-          var terms = split( this.value.split(/,\s*/) );
+          var terms = this.value.split(/,\s*/) ;
           // remove the current input
           terms.pop();
           // add the selected item
@@ -36,11 +49,12 @@ app.offTogetherView = Backbone.View.extend({
           this.value = terms.join( ", " );
           return false;
         }
-      });
+    });
+  },
 
 
 	render : function(){
-
+    this.$el.append(this.ac);
 	}
 
 

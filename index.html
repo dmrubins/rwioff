@@ -12,13 +12,10 @@
 	<li title="Off of <%=block%>" class="list-group-item <%= block %>"><%= name %></li>
 </script>
 
-<script type="template" id="offTogetherTemplate">
-	<li title="Off of <%=block%>" class="list-group-item <%= block %>"><%= name %></li>
-</script>
-
 <script type="template" id="date">
 	<h2><span class="label" id="date"><%= date %></span></h2>
 </script>
+
 
 <script type="text/javascript" src="static/js/libs/jquery.js"></script>
 <script type="text/javascript" src="static/js/libs/jquery-ui.min.js"></script>
@@ -31,6 +28,7 @@
 <script type="text/javascript" src="static/js/views/residentBlockView.js"></script>
 <script type="text/javascript" src="static/js/views/datePickerView.js"></script>
 <script type="text/javascript" src="static/js/views/emailView.js"></script>
+<script type="text/javascript" src="static/js/views/offTogetherView.js"></script>
 
 
 <script type="text/javascript">
@@ -41,15 +39,16 @@ pad = function (val, len) {
         return val;
 	};
 
+var dispatcher = _.clone(Backbone.Events);
 
 $(function(){
 	dm = new app.datePickerModel();
 	d = new app.datePickerView({model: dm, el: $('#datepicker')});
 	d.render();
 
-	internSchedule = new app.scheduleModel({pgy: "interns", dateModel : dm});
-	juniorSchedule = new app.scheduleModel({pgy: "juniors", dateModel : dm});
-	seniorSchedule = new app.scheduleModel({pgy: "seniors", dateModel : dm});
+	internSchedule = new app.scheduleModel({pgy: "interns"});
+	juniorSchedule = new app.scheduleModel({pgy: "juniors"});
+	seniorSchedule = new app.scheduleModel({pgy: "seniors"});
 
 	new app.residentBlockView({model : internSchedule, el : $('#InternOffList')})
 	new app.residentBlockView({model : juniorSchedule, el : $('#JuniorOffList') })
@@ -58,6 +57,9 @@ $(function(){
 	email = new app.emailView({el : $("#internemail"), model : internSchedule})
 	email = new app.emailView({el : $("#junioremail"), model : juniorSchedule})
 	email = new app.emailView({el : $("#senioremail"), model : seniorSchedule})
+
+	offTogetherView = new app.offTogetherView({el : $("#offTogetherContainer")})
+	offTogetherView.render()
 
 })
 </script>
@@ -73,7 +75,7 @@ $(function(){
 		</div>
 	</div>
 	<hr />
-
+		<div id="offTogetherContainer"></div>
 	<hr />
 	<div class="row">
 		<div class="col-sm-4">

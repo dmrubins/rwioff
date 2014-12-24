@@ -14,6 +14,9 @@ app.datePickerView = Backbone.View.extend({
 		var s = this;
 		this.dp.datepicker({
 			onSelect: function(){ 
+				
+				dispatcher.trigger("")
+
 				s.model.setDate(s.dp.datepicker('getDate')) ;
 				s.updateHeading(s.dp.datepicker('getDate')) ;
 			} ,
@@ -27,8 +30,8 @@ app.datePickerView = Backbone.View.extend({
 		});
 	},
 
-	updateHeading : function (){
-		d = {date : $.datepicker.formatDate( "D, M d, yy", this.model.get('currentDate') ) };
+	updateHeading : function (date){
+		d = {date : $.datepicker.formatDate( "D, M d, yy", date ) };
 		t = this.template( d );
 		this.heading.html(t);
 	},
