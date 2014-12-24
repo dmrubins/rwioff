@@ -10,7 +10,6 @@ app.scheduleModel = Backbone.Model.extend({
 
 	initialize : function(){
 		this.listenTo(dispatcher, 'change:currentDate', this.onDateChange);
-		this.onDateChange();
 	},
 
 	onDateChange : function(date){
