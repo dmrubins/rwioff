@@ -31,7 +31,6 @@ app.scheduleModel = Backbone.Model.extend({
 				data = $.parseJSON(data);
 				names = data.names;
 				blocks = data.blocks;
-				//ids = data.ids;
 				for (var i = 0; i < names.length; i++){
 					residents.add(new app.residentOffForDayModel({'name': names[i], 'block': blocks[i]}) ) ;
 				}

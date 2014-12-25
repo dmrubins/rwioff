@@ -6,6 +6,9 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
 <link rel="stylesheet" href="static/css/jquery-ui.min.css" />
+<link rel="stylesheet" href="static/css/token-input-mac.css" />
+<link rel="stylesheet" href="static/css/token-input-facebook.css" />
+<link rel="stylesheet" href="static/css/token-input.css" />
 <link rel="stylesheet" href="static/css/main.css" />
 
 <script type="template" id="residentBlockTemplate">
@@ -19,10 +22,11 @@
 
 <script type="text/javascript" src="static/js/libs/jquery.js"></script>
 <script type="text/javascript" src="static/js/libs/jquery-ui.min.js"></script>
+<script type="text/javascript" src="static/js/libs/jquery.tokeninput.js"></script>
 <script type="text/javascript" src="static/js/libs/underscore.js"></script>
 <script type="text/javascript" src="static/js/libs/backbone.js"></script>
+<script type="text/javascript" src="static/js/models/residentModel.js"></script>
 <script type="text/javascript" src="static/js/models/residentOffForDayModel.js"></script>
-<script type="text/javascript" src="static/js/models/datePickerModel.js"></script>
 <script type="text/javascript" src="static/js/collections/residentsCollection.js"></script>
 <script type="text/javascript" src="static/js/models/scheduleModel.js"></script>
 <script type="text/javascript" src="static/js/views/residentBlockView.js"></script>
@@ -42,9 +46,11 @@ pad = function (val, len) {
 var dispatcher = _.clone(Backbone.Events);
 
 $(function(){
-	dm = new app.datePickerModel();
-	d = new app.datePickerView({model: dm, el: $('#datepicker')});
+	d = new app.datePickerView({el: $('#datepicker')});
 	d.render();
+
+	residents = new app.residentsCollection();
+	residents.getAllResidents();
 
 	internSchedule = new app.scheduleModel({pgy: "interns"});
 	juniorSchedule = new app.scheduleModel({pgy: "juniors"});

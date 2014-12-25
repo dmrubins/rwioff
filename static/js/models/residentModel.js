@@ -5,8 +5,8 @@ app.residentModel = Backbone.Model.extend({
 	defaults : {
 		id : null,
 		name : null,
-		email : null
-		preferences : new app.preferencesModel()
+		email : null,
+		//preferences : new app.preferencesModel()
 	}
 	
 })
