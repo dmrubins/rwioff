@@ -13,7 +13,7 @@ app.offTogetherInputView = Backbone.View.extend({
     tags = app.residents.getNamesAndIds();
     this.$el.tokenInput(tags, {
         theme : 'facebook',
-        hintText : 'Type in a resident\'s name'
+        hintText : 'Type in the residents to search for'
     });
 
    /* this.$el.tokenInput('add', {'name' : 'Aabiog K', 'id' : '4479'});
