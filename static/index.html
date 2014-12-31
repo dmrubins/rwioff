@@ -1,0 +1,190 @@
+<html>
+
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+<link rel="stylesheet" href="static/css/jquery-ui.min.css" />
+<link rel="stylesheet" href="static/css/token-input-mac.css" />
+<link rel="stylesheet" href="static/css/token-input-facebook.css" />
+<link rel="stylesheet" href="static/css/token-input.css" />
+<link rel="stylesheet" href="static/css/main.css" />
+
+<script type="template" id="residentBlockTemplate">
+	<li title="Off of <%=block%>" class="list-group-item <%= block %>"><%= name %></li>
+</script>
+
+<script type="template" id="dateTemplate">
+	<li class="list-group-item"><%= date %></li>
+</script>
+
+<script type="template" id="date">
+	<h2><span class="label" id="date"><%= date %></span></h2>
+</script>
+
+
+<script type="text/javascript" src="static/js/libs/jquery.js"></script>
+<script type="text/javascript" src="static/js/libs/jquery-ui.min.js"></script>
+<script type="text/javascript" src="static/js/libs/jquery.tokeninput.js"></script>
+<script type="text/javascript" src="static/js/libs/underscore.js"></script>
+<script type="text/javascript" src="static/js/libs/backbone.js"></script>
+<script type="text/javascript" src="static/js/models/residentModel.js"></script>
+<script type="text/javascript" src="static/js/models/residentOffForDayModel.js"></script>
+<script type="text/javascript" src="static/js/collections/residentsCollection.js"></script>
+<script type="text/javascript" src="static/js/models/offForDateModel.js"></script>
+<script type="text/javascript" src="static/js/models/offTogetherModel.js"></script>
+<script type="text/javascript" src="static/js/views/residentBlockView.js"></script>
+<script type="text/javascript" src="static/js/views/datePickerView.js"></script>
+<script type="text/javascript" src="static/js/views/emailView.js"></script>
+<script type="text/javascript" src="static/js/views/offTogetherView.js"></script>
+
+
+<script type="text/javascript">
+pad = function (val, len) {
+		val = String(val);
+        len = len || 2;
+        while (val.length < len) val = "0" + val;
+        return val;
+	};
+
+var app = app || {};
+app.dispatcher = _.clone(Backbone.Events);
+app.date = new Date();
+
+$(function(){
+	d = new app.datePickerView({el: $('#datepicker')});
+	d.render();
+
+	app.residents = new app.residentsCollection();
+	app.residents.getAllResidents();
+
+
+	internSchedule = new app.offForDateModel({pgy: "interns"});
+	juniorSchedule = new app.offForDateModel({pgy: "juniors"});
+	seniorSchedule = new app.offForDateModel({pgy: "seniors"});
+
+	new app.residentBlockView({model : internSchedule, el : $('#InternOffList')})
+	new app.residentBlockView({model : juniorSchedule, el : $('#JuniorOffList') })
+	new app.residentBlockView({model : seniorSchedule, el : $('#SeniorOffList') })
+	
+	email = new app.emailView({el : $("#internemail"), model : internSchedule})
+	email = new app.emailView({el : $("#junioremail"), model : juniorSchedule})
+	email = new app.emailView({el : $("#senioremail"), model : seniorSchedule})
+
+	offTogetherModel = new app.offTogetherModel();
+	offTogetherInputView = new app.offTogetherInputView({el : $("#offTogetherContainer")})
+	offTogetherListView = new app.offTogetherListView({model : offTogetherModel, el : $("#offTogetherList")})
+
+	app.dispatcher.trigger('change:date');
+
+})
+</script>
+
+</head>
+
+<body>
+<a id="search-by-date"></a>
+<div class="container">
+	
+	<div class="row" style="text-align:center;margin:10px">
+		<div class="col-sm-12 col-md-12">
+			<a class="btn btn-lg btn-info" href="#search-by-resident">Search By Resident</a>
+		</div>
+
+	</div>
+	<hr />
+
+
+
+	<div class="col-sm-12">
+		<div class="row">
+			<div class="col-sm-12">
+				<div id="datepicker"></div>
+			</div>
+		</div>
+		
+		<hr />
+		
+		<div class="row">
+			<div class="col-sm-12 col-md-4">
+				<div class="panel panel-success">
+					<div class="panel-heading">
+						<h3 class="panel-title">Interns Off</h3>
+					</div>
+					<div class="panel-body">
+						<ul class="list-group" id="InternOffList"></ul>
+						<div class="row">
+							<div class="col-sm-12">
+								<a id="internemail" class="email-button label">Email All</a>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-sm-12" style="text-align:center">Only works with Partners email address in Outlook. (for now)</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-sm-12 col-md-4">
+				<div class="panel panel-info">
+					<div class="panel-heading">
+						<h3 class="panel-title">Juniors Off</h3>
+					</div>
+					<div class="panel-body">
+						<ul class="list-group" id="JuniorOffList"></ul>
+						<div class="row">
+							<div class="col-sm-12">
+								<a id="junioremail" class="email-button label">Email All</a>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-sm-12" style="text-align:center">Only works with Partners email address in Outlook. (for now)</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="col-sm-12 col-md-4">
+				<div class="panel panel-danger">
+					<div class="panel-heading">
+						<h3 class="panel-title">Seniors Off</h3>
+					</div>
+					<div class="panel-body">
+						<ul class="list-group" id="SeniorOffList"></ul>
+						<div class="row">
+							<div class="col-sm-12">
+								<a id="senioremail" class="email-button label">Email All</a>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-sm-12" style="text-align:center">Only works with Partners email address in Outlook. (for now)</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="col-sm-12" style="text-align:center;height:800px">
+		<a id="search-by-resident"></a>
+		<hr />
+		<div class="col-sm-12 col-md-12">
+			<a href="#search-by-date" class="btn btn-lg btn-info">Search By Date</a>
+			<hr />
+		</div>
+		
+		<div class="row">
+			<h4 id="off-together-heading">Residents</h4>
+			<div id="offTogetherContainer" style="margin:10px auto;"></div>
+			<div>
+				<ul class="list-group" id="offTogetherList"></ul>
+			</div>
+		</div>
+	</div>
+
+</div>
+
+
+</body>
+</html>

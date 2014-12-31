@@ -257,18 +257,26 @@ class Schedule():
 
 class Schedules():
 
-    def __init__(self):
+    def __init__(self, *args):
         self.schedules = {}
+        for i in range(len(args)):
+            s = args[i]
+            self.add_all(s)
 
     def add(self, schedule):
         resident_id = schedule.get_resident().get_id()
         self.schedules[resident_id] = schedule
 
-    def get_residents_off_for_date(self, dt):
+    def add_all(self, schedules):
+        for s in schedules.schedules:
+            self.add(schedules.schedules[s])
+
+    def get_residents_off_for_date(self, dt, pgy):
         off_residents = []
         for i in self.schedules:            
             s = self.schedules[i]
-            #print(s.get_resident().get_name())
+            if not s.get_resident().is_pgy(pgy):
+                continue
             if s.is_off_on(dt):
                 off_residents.append( (s.get_resident().get_name(), s.get_block(dt)) )
         return off_residents
@@ -276,11 +284,16 @@ class Schedules():
     def get_schedule_for_resident(self, resident):
         return self.schedules.get(resident.get_id())
         
-    def intersect_schedules(self, *args):
-        days_off = set(self.schedules[1].date_range)
-        for i in range(len(args)):
-            s = self.get_schedule_for_resident(r[i])
-            days_off = days_off & s.get_all_days_off()
+    def get_schedule_by_id(self, id):
+        return self.schedules.get(str(id))
 
-        return days_off
-        #Intersect days off
+    def intersect_schedules(self, ids):
+        start_date = datetime.now().date()
+        end_date = date(2015, 6, 20) #last day of this year
+        date_range = [start_date + timedelta(i) for i in range(int ( (end_date - start_date).days ))]
+        days_off = set(date_range)
+        for i in range(len(ids)):
+            s = self.get_schedule_by_id(ids[i])
+            if s is not None:
+                days_off = days_off & s.get_all_days_off()
+        return sorted(days_off)

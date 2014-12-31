@@ -32,7 +32,7 @@ def get_ica_file(vcal):
     return Calendar.from_ical(f.read())
 
 
-def create_schedules_from_ica(resident_str, scheduleClass):
+def create_schedules_from_ica(resident_str, scheduleClass, pgy):
     #pattern to get the vcal identifier 
     pattern = "<option value=\".*?14\*(.*)\*.*?>(.*)"
     
@@ -49,7 +49,7 @@ def create_schedules_from_ica(resident_str, scheduleClass):
         if re.search("(SubI|OB I|ED Intern)", res_name, re.I):
             #print(res_name)
             continue 
-        resident = Resident(vcal, res_name)
+        resident = Resident(vcal, res_name, pgy)
         cal = get_ica_file(vcal)
         schedule = scheduleClass(resident, dates)
         schedule.create_from_ical(cal)
@@ -91,22 +91,17 @@ for select in selects:
         seniors = str(options.contents[1])
 
 #cycle through all the matches and grab the vcal identifier and the residents name
-intern_schedules, interns = create_schedules_from_ica(interns, InternSchedule)
-junior_schedules, juniors = create_schedules_from_ica(juniors, JuniorSchedule)
-senior_schedules, seniors = create_schedules_from_ica(seniors, SeniorSchedule)
+intern_schedules, interns = create_schedules_from_ica(interns, InternSchedule, 1)
+junior_schedules, juniors = create_schedules_from_ica(juniors, JuniorSchedule, 2)
+senior_schedules, seniors = create_schedules_from_ica(seniors, SeniorSchedule, 3)
 
 residents = Residents(interns | juniors | seniors)
+schedules = Schedules(intern_schedules, junior_schedules, senior_schedules)
 
 # Compile a list of residents
 with open('Residents.pickle', 'wb') as f:
     pickle.dump(residents, f)
 
 #Save the file with filename lastname_firstname
-with open('InternSchedules.pickle', 'wb') as f:
-    pickle.dump(intern_schedules, f)
-
-with open('JuniorSchedules.pickle', 'wb') as f:
-    pickle.dump(junior_schedules, f)
-
-with open('SeniorSchedules.pickle', 'wb') as f:
-    pickle.dump(senior_schedules, f)
+with open('Schedules.pickle', 'wb') as f:
+    pickle.dump(schedules, f)

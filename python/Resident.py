@@ -16,15 +16,19 @@ class Resident():
 
         return firstname + " " + lastname
 
-    def __init__(self, vcal, name):
+    def __init__(self, vcal, name, pgy):
         self.id = vcal
         self.name = Resident.fix_name(name)
+        self.pgy = pgy
 
     def get_id(self):
         return self.id
 
     def get_name(self):
         return self.name
+
+    def is_pgy(self, pgy):
+        return pgy == self.pgy
 
 class Residents():
 
@@ -44,3 +48,6 @@ class Residents():
                 return r
 
         print("Not found: {}".format(name))
+
+    def get_residents(self):
+        return self.residents

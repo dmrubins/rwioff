@@ -64,7 +64,7 @@ $(function(){
 	email = new app.emailView({el : $("#junioremail"), model : juniorSchedule})
 	email = new app.emailView({el : $("#senioremail"), model : seniorSchedule})
 
-	offTogetherView = new app.offTogetherView({el : $("#offTogetherContainer")})
+	offTogetherView = new app.offTogetherView({el : $("#offTogetherContainer"), residents : residents})
 	offTogetherView.render()
 
 })

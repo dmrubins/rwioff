@@ -14,8 +14,9 @@ app.datePickerView = Backbone.View.extend({
 		var s = this;
 		this.dp.datepicker({
 			onSelect: function(){ 
-				dispatcher.trigger('change:date', this('getDate') )
-				s.updateHeading(s.dp.datepicker('getDate')) ;
+				app.date = s.dp.datepicker('getDate');
+				app.dispatcher.trigger('change:date');
+				s.updateHeading() ;
 			} ,
 			changeMonth: true,
 			changeYear: true,
@@ -27,8 +28,8 @@ app.datePickerView = Backbone.View.extend({
 		});
 	},
 
-	updateHeading : function (date){
-		d = {date : $.datepicker.formatDate( "D, M d, yy", date ) };
+	updateHeading : function (){
+		d = {date : $.datepicker.formatDate( "D, M d, yy", app.date ) };
 		t = this.template( d );
 		this.heading.html(t);
 	},

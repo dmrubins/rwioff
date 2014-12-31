@@ -44,7 +44,11 @@ li.DPH:after{
 	content:" DPH";
 }
 
-
 html {
 	overflow-y: scroll;
+}
+
+
+ul.token-input-list-facebook {
+	margin:10px auto;
 }

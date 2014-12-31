@@ -10,13 +10,11 @@ with open("Residents.pickle", 'rb') as f:
 	residents = pickle.load(f)
 
 
-#r = residents.get_resident_by_name("Alessandra Calvo-Friedman")
-#print(r)
+def intersect_residents(ids):
+	global schedules
 
-#s = schedules.get_schedule_for_resident(r)
-#s.print_schedule()
+	#Parse the ids
+	ids = ids.split(";")
+	return {"id" : [x[0] for x in ids]}
 
-
-r = schedules.get_residents_off_for_date(datetime(2015,1,1))
-print(r)
-
+print(intersect_residents('12345678'))
